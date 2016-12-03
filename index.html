@@ -1,11 +1,203 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Group project</title>
+    <title>Scientific Paper Managment Information System</title>
+
+    <!-- Bootstrap for CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- For mobiles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style type="text/css">
+
+    body {
+        background: #f8f8f8;
+    }
+
+    label {
+        font-weight: normal;
+    }
+
+    #main-container {
+        width: 60%;
+        margin: auto;
+    }
+
+    .grid-row {
+        display: table-row;
+    }
+
+    .grid-cell {
+        display: table-cell;
+        padding: 10px;
+    }
+
+    .date-input {
+        width: 100px;
+    }
+
+    .heading {
+        font-weight: bold;
+        font-size: 1.3em;
+    }
+
+    #search-results {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        height: 100%;
+    }
+
+    #search-area {
+        vertical-align: bottom;
+    }
+
+    #search-results li a {
+        font-size: 1.2em;
+    }
+
+    .authors, .published-date {
+        font-size: 0.9em;
+    }
+
+    .published-date {
+        float: right;
+    }
+
+    .abstract-excerpt {
+        color: gray;
+    }
+
+    </style>
+
 </head>
 <body>
 
-Group project here
+
+<div id="main-container">
+
+    <div class="grid-row">
+
+        <!-- Title/logo -->
+        <div class="grid-cell">
+            <h1>Scientific Papers</h1>
+        </div>
+
+        <!-- Search box and search button -->
+        <div class="grid-cell form-inline" id="search-area">
+            <input type="text" placeholder="Enter keywords..." class="form-control" />
+            <button class="btn btn-default">Search</button>
+        </div>
+    </div>
+
+    <div class="grid-row">
+
+        <!-- Sorting and filtering options -->
+        <div class="grid-cell">
+
+            <p class="heading">Sort by</p>
+
+            <p>
+                <select class="form-control">
+                    <option>Relevance</option>
+                    <option>Date ascending</option>
+                    <option>Date descending</option>
+                    <option>Reference count</option>
+                </select>
+            </p>
+
+            <p class="heading">Filters</p>
+
+            <p class="filter">
+                <label>
+                    <input type="checkbox" onchange="toggleFilter(this)">
+                    Date between
+                </label>
+                <br />
+                <span class="filter-controls">
+                    <input type="text" class="date-input form-control" /> and
+                    <input type="text" class="date-input form-control" />
+                </span>
+            </p>
+
+            <p class="filter">
+                <label>
+                    <input type="checkbox" onchange="toggleFilter(this)">
+                    Author:
+                </label>
+                <span class="filter-controls">
+                    <input type="text" class="form-control" />
+                </span>
+            </p>
+        </div>
+
+        <div class="grid-cell">
+            <!-- Search results -->
+            <div id="search-results">
+
+                <p>
+                    <b>Related keywords:</b>
+                    <a href="#">Keyword 1</a>,
+                    <a href="#">Keyword 2</a>,
+                    <a href="#">Keyword 3</a>
+                </p>
+                <p>
+                   Showing <b>234</b> results for <b>your keyword</b>
+                </p>
+                <ol>
+                    <li>
+                        <a href="#">Paper 1 title</a><br />
+                        <span class="authors">Author 1, Author 2 etc...</span>
+                        <span class="published-date">Published 01/02/2003</span>
+                        <p class="abstract-excerpt">
+                            "Brief excerpt from abstract of the paper here: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae felis et nisl porta blandit vitae sit amet turpis. Duis eget laoreet..."
+                        </p>
+                    </li>
+
+                    <li>
+                        <a href="#">Paper 2 title</a><br />
+                        <span class="authors">Author 1, Author 2 etc...</span>
+                        <span class="published-date">Published 025/12/2004</span>
+                        <p class="abstract-excerpt">
+                            "Brief excerpt from abstract of the paper here: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae felis et nisl porta blandit vitae sit amet turpis. Duis eget laoreet..."
+                        </p>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+/*
+ * Enable/disable the controls for a filter when the checkbox is
+ * checked/unchecked
+ */
+function toggleFilter(checkbox) {
+
+    var el = checkbox;
+    while (el.className.split(" ").indexOf("filter") < 0) {
+        el = el.parentElement;
+    }
+
+    var inputs = el.querySelectorAll(".filter-controls input");
+
+    for (var i=0; i<inputs.length; i++) {
+        inputs[i].disabled = !checkbox.checked;
+    }
+}
+
+// Enable or disable all the filter controls so that they match the state of
+// the checkboxes
+var checkboxes = document.querySelectorAll(".filter input[type=checkbox]");
+for (var i=0; i<checkboxes.length; i++) {
+    checkboxes[i].onchange();
+}
+
+</script>
 
 </body>
 </html>
