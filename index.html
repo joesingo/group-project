@@ -139,7 +139,7 @@
         <div class="grid-cell">
             <!-- Search results -->
             <div id="search-results">
-                <span id="intro-message">Please enter a search query</span>
+                <span id="message">Please enter a search query</span>
                 <p>
                     <b>Related keywords:</b>
                     <span id="related-keywords"></span>
@@ -156,42 +156,104 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript">
 
+const PROXY_URL = "https://users.cs.cf.ac.uk/SingletonJ1/group-project/server/search_science_direct.php";
+const API_KEY = "ba079b238ccdab296232e4ce8b9f5b6e";
+const API_URL = "https://api.elsevier.com/content/search/scidir";
+
+var API_FIELDS = {
+    "title": "dc:title",
+    "abstract": "dc:description",
+    "authors": "authors",
+    "published_date": "prism:coverDate",
+    "url": "prism:url",
+    "total_results": "opensearch:totalResults"
+};
+
 /*
- * Search ScienceDirect with the search query provided and use the filters
- * selected on the page
+ * Send an AJAX request to search ScienceDirect with the search query provided
+ * and use the filters selected on the page. Call rankResults() when the request
+ * completes
  */
 function search(query) {
-    $("#search-results").children().show();
-    $("#intro-message").remove();
+    $("#search-results").children().hide();
+    $("#message").text("Loading...").show();;
 
     $("#search-area input").val(query);
 
-    // TODO: Send an AJAX request to the ScienceDirect API here. When it
-    // completes send the response to our server by calling rankResults()
+    $.ajax(PROXY_URL, {
+        "data": {
+            "url": API_URL,
+            "apiKey": API_KEY,
+            "httpAccept": "application/json",
+            "field": Object.values(API_FIELDS).join(","),
+            "query": query
+        },
 
-    rankResults({
-        "query": query,
-        "papers": [
-            {"title": "Test paper 1",
-             "link": "http://www.google.co.uk",
-             "authors": ["Bob Jones", "Dave Smith"],
-             "published_date": "01/02/2003",
-             "abstract": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque sit amet ex ultrices porttitor. Sed pellentesque justo in mauris dapibus consectetur. Aliquam elementum id lorem eu vulputate. Nam sollicitudin metus nec suscipit tristique. Donec consectetur condimentum suscipit. Donec et ultrices sapien"}
-        ],
+        "error": function() {
+            alert("Unexpected error querying ScienceDirect :(");
+        },
 
-        "related_keywords": ["maths", "computer science", "physics"]
-    });  // temporary
+        "success": function(data, textStatus) {
+            var results = JSON.parse(data);
+            rankResults(results);
+        }
+    });
 }
 
 /*
- * Send the search results from ScienceDirect to our server to be ranked, and
- * call showSearchResults() when it is complete
+ * Format the search results from ScienceDirect and send to our server to be
+ * ranked, and call showSearchResults() when it is complete
  */
 function rankResults(results) {
-    // TODO: Send an AJAX request to our server and call showSearchResults()
-    // when it completes
+    var formatted_results = {
+        "query": results["search-results"]["opensearch:Query"]["@searchTerms"],
+        "papers": []
+    };
 
-    showSearchResults(results);
+    if (results["search-results"][API_FIELDS.total_results] > 0) {
+        var papers = results["search-results"]["entry"];
+
+        for (var i=0; i<papers.length; i++) {
+
+            // The link in the search results is an API link - replace the start
+            // of it to get the actual link to the paper
+            var link = papers[i][API_FIELDS.url];
+            link = link.replace("https://api.elsevier.com/content/",
+                                "https://www.sciencedirect.com/science/");
+
+            // Put the author list into a single array
+            var authors = [];
+
+            // Check that the authors list is present
+            if (API_FIELDS.authors in papers[i] &&
+                "author" in papers[i][API_FIELDS.authors]) {
+
+                var authors_list = papers[i].authors.author;
+
+                for (var j=0; j<authors_list.length; j++) {
+                    authors.push(authors_list[j]["given-name"] + " " +
+                                 authors_list[j]["surname"]);
+                }
+            }
+            else {
+                authors = ["N/A"];
+            }
+
+            formatted_results.papers.push({
+                "title": papers[i][API_FIELDS.title],
+                "link": link,
+                "authors": authors,
+                "published_date": papers[i][API_FIELDS.published_date][0]["$"],
+                "abstract": papers[i][API_FIELDS.abstract],
+            });
+        }
+    }
+
+    // TODO: Send formatted_results to our server via AJAX to do the ranking and
+    // get related keywords, and call showSearchResults() when finished
+
+    formatted_results.related_keywords = ["maths", "computer science", "physics"];
+    showSearchResults(formatted_results);
 }
 
 /*
@@ -202,6 +264,9 @@ function showSearchResults(results) {
     $("#search-query").text(results.query);
     $("#results-list").text("");
     $("#related-keywords").text("");
+
+    $("#search-results").children().show();
+    $("#message").hide();
 
     // Show the related keywords
     for (let i=0; i<results.related_keywords.length; i++) {
@@ -235,10 +300,17 @@ function showSearchResults(results) {
             "class": "published-date"
         });
 
+        var abstract = results.papers[i].abstract || "No abstract available";
+
+        // Some abstracts seem to start with the word 'Abstract' which is
+        // not necessary to show
+        if (abstract.substr(0, 8) == "Abstract") {
+            abstract = abstract.substr(8);
+        }
+
         // Trim the abstract if it is too long
-        var abstract = results.papers[i].abstract
-        if (abstract.length > 100) {
-            abstract = abstract.substr(0, 100) + "...";
+        if (abstract.length > 500) {
+            abstract = abstract.substr(0, 500) + "...";
         }
 
         var $p = $("<p>", {
@@ -280,7 +352,7 @@ for (var i=0; i<checkboxes.length; i++) {
 $(document).ready(function() {
     // Hide the search results area
     $("#search-results").children().hide();
-    $("#intro-message").show();
+    $("#message").show();
 });
 
 </script>
