@@ -258,16 +258,16 @@ function showSearchResults(results) {
  */
 function toggleFilter(checkbox) {
 
-    var el = checkbox;
-    while (el.className.split(" ").indexOf("filter") < 0) {
-        el = el.parentElement;
+    var $el = $(checkbox);
+    while (!($el.hasClass("filter"))) {
+        $el = $el.parent();
     }
 
-    var inputs = el.querySelectorAll(".filter-controls input");
+    var $inputs = $el.find(".filter-controls input");
 
-    for (var i=0; i<inputs.length; i++) {
-        inputs[i].disabled = !checkbox.checked;
-    }
+    $inputs.each(function (index, input) {
+        input.disabled = !checkbox.checked;
+    });
 }
 
 // Enable or disable all the filter controls so that they match the state of
