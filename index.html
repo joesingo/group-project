@@ -86,10 +86,13 @@
         </div>
 
         <!-- Search box and search button -->
-        <div class="grid-cell form-inline" id="search-area">
-            <input type="text" placeholder="Enter keywords..." class="form-control" />
+        <form class="grid-cell form-inline" id="search-area"
+              onsubmit="search(this.query.value); return false">
+
+            <input type="text" placeholder="Enter keywords..." class="form-control"
+                   name="query" />
             <button class="btn btn-default">Search</button>
-        </div>
+        </form>
     </div>
 
     <div class="grid-row">
@@ -136,41 +139,118 @@
         <div class="grid-cell">
             <!-- Search results -->
             <div id="search-results">
-
+                <span id="intro-message">Please enter a search query</span>
                 <p>
                     <b>Related keywords:</b>
-                    <a href="#">Keyword 1</a>,
-                    <a href="#">Keyword 2</a>,
-                    <a href="#">Keyword 3</a>
+                    <span id="related-keywords"></span>
                 </p>
                 <p>
-                   Showing <b>234</b> results for <b>your keyword</b>
+                   Showing <b id="no-of-results"></b> results for <b id="search-query"></b>
                 </p>
-                <ol>
-                    <li>
-                        <a href="#">Paper 1 title</a><br />
-                        <span class="authors">Author 1, Author 2 etc...</span>
-                        <span class="published-date">Published 01/02/2003</span>
-                        <p class="abstract-excerpt">
-                            "Brief excerpt from abstract of the paper here: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae felis et nisl porta blandit vitae sit amet turpis. Duis eget laoreet..."
-                        </p>
-                    </li>
-
-                    <li>
-                        <a href="#">Paper 2 title</a><br />
-                        <span class="authors">Author 1, Author 2 etc...</span>
-                        <span class="published-date">Published 025/12/2004</span>
-                        <p class="abstract-excerpt">
-                            "Brief excerpt from abstract of the paper here: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae felis et nisl porta blandit vitae sit amet turpis. Duis eget laoreet..."
-                        </p>
-                    </li>
-                </ol>
+                <ol id="results-list"></ol>
             </div>
         </div>
     </div>
 </div>
 
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript">
+
+/*
+ * Search ScienceDirect with the search query provided and use the filters
+ * selected on the page
+ */
+function search(query) {
+    $("#search-results").children().show();
+    $("#intro-message").remove();
+
+    $("#search-area input").val(query);
+
+    // TODO: Send an AJAX request to the ScienceDirect API here. When it
+    // completes send the response to our server by calling rankResults()
+
+    rankResults({
+        "query": query,
+        "papers": [
+            {"title": "Test paper 1",
+             "link": "http://www.google.co.uk",
+             "authors": ["Bob Jones", "Dave Smith"],
+             "published_date": "01/02/2003",
+             "abstract": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque sit amet ex ultrices porttitor. Sed pellentesque justo in mauris dapibus consectetur. Aliquam elementum id lorem eu vulputate. Nam sollicitudin metus nec suscipit tristique. Donec consectetur condimentum suscipit. Donec et ultrices sapien"}
+        ],
+
+        "related_keywords": ["maths", "computer science", "physics"]
+    });  // temporary
+}
+
+/*
+ * Send the search results from ScienceDirect to our server to be ranked, and
+ * call showSearchResults() when it is complete
+ */
+function rankResults(results) {
+    // TODO: Send an AJAX request to our server and call showSearchResults()
+    // when it completes
+
+    showSearchResults(results);
+}
+
+/*
+ * Show the actual search results on the page
+ */
+function showSearchResults(results) {
+    $("#no-of-results").text(results.papers.length);
+    $("#search-query").text(results.query);
+    $("#results-list").text("");
+    $("#related-keywords").text("");
+
+    // Show the related keywords
+    for (let i=0; i<results.related_keywords.length; i++) {
+        var $link = $("<a>", {"href": "#", "text": results.related_keywords[i]})
+        $link.on("click",
+            function() {
+                search(results.related_keywords[i]);
+            }
+        );
+        $("#related-keywords").append($link);
+
+        if (i + 1 < results.related_keywords.length) {
+            $("#related-keywords").append(", ");
+        }
+    }
+
+    // Show the papers
+    for (var i=0; i<results.papers.length; i++) {
+        var $link = $("<a>", {
+            "href": results.papers[i].link,
+            "text": results.papers[i].title
+        });
+
+        var $authors = $("<span>", {
+            "text": results.papers[i].authors.join(", "),
+            "class": "authors"
+        });
+
+        var $date = $("<span>", {
+            "text": "Published " + results.papers[i].published_date,
+            "class": "published-date"
+        });
+
+        // Trim the abstract if it is too long
+        var abstract = results.papers[i].abstract
+        if (abstract.length > 100) {
+            abstract = abstract.substr(0, 100) + "...";
+        }
+
+        var $p = $("<p>", {
+            "text": abstract,
+            "class": "abstract-excerpt"
+        });
+
+        var $li = $("<li>");
+        $li.append($link, "<br />", $authors, $date, $p);
+        $("#results-list").append($li);
+    }
+}
 
 /*
  * Enable/disable the controls for a filter when the checkbox is
@@ -196,6 +276,12 @@ var checkboxes = document.querySelectorAll(".filter input[type=checkbox]");
 for (var i=0; i<checkboxes.length; i++) {
     checkboxes[i].onchange();
 }
+
+$(document).ready(function() {
+    // Hide the search results area
+    $("#search-results").children().hide();
+    $("#intro-message").show();
+});
 
 </script>
 
