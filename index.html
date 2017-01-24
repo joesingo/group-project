@@ -179,6 +179,7 @@ function search(query) {
     $("#message").text("Loading...").show();;
 
     $("#search-area input").val(query);
+    $("#search-area input").blur();
 
     $.ajax(PROXY_URL, {
         "data": {
@@ -186,11 +187,12 @@ function search(query) {
             "apiKey": API_KEY,
             "httpAccept": "application/json",
             "field": Object.values(API_FIELDS).join(","),
+            "count": 50,
             "query": query
         },
 
         "error": function() {
-            alert("Unexpected error querying ScienceDirect :(");
+            $("#message").text("Unexpected error querying ScienceDirect :(");
         },
 
         "success": function(data, textStatus) {
