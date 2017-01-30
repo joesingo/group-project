@@ -156,7 +156,6 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript">
 
-const PROXY_URL = "https://users.cs.cf.ac.uk/SingletonJ1/group-project/server/search_science_direct.php";
 const API_KEY = "ba079b238ccdab296232e4ce8b9f5b6e";
 const API_URL = "https://api.elsevier.com/content/search/scidir";
 
@@ -181,9 +180,8 @@ function search(query) {
     $("#search-area input").val(query);
     $("#search-area input").blur();
 
-    $.ajax(PROXY_URL, {
+    $.ajax(API_URL, {
         "data": {
-            "url": API_URL,
             "apiKey": API_KEY,
             "httpAccept": "application/json",
             "field": Object.values(API_FIELDS).join(","),
@@ -196,8 +194,7 @@ function search(query) {
         },
 
         "success": function(data, textStatus) {
-            var results = JSON.parse(data);
-            rankResults(results);
+            rankResults(data);
         }
     });
 }
