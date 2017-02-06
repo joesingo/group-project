@@ -244,8 +244,39 @@ function rankResults(results) {
                 "authors": authors,
                 "published_date": papers[i][API_FIELDS.published_date][0]["$"],
                 "abstract": papers[i][API_FIELDS.abstract],
+		"score": 0
             });
+
+	    //increase score for age
+
+	    var year = formatted_results.papers[i].published_date.slice(0,4);
+	    var month = formatted_results.papers[i].published_date.slice(5,7);
+
+	    var date = new Date();
+;
+	    var age_yr = date.getFullYear() - year;
+	    var age_mth = date.getMonth() + 1 - month;
+
+            var increase = 50 - (age_yr*12 + age_mth);
+	    
+	    if(increase < 0){
+		increase = 0;
+	    }
+
+	    formatted_results.papers[i].score += increase;
         }
+
+	//sorting results by score
+	formatted_results.papers.sort(function (a,b){
+		var sortStatus = 0;
+		if(a.score>b.score){
+		    sortStatus = -1;
+		}else if(a.score<b.score){
+		    sortStatus = 1;
+		}
+		return sortStatus;
+	});
+
     }
 
     // TODO: Send formatted_results to our server via AJAX to do the ranking and
@@ -286,7 +317,7 @@ function showSearchResults(results) {
     for (var i=0; i<results.papers.length; i++) {
         var $link = $("<a>", {
             "href": results.papers[i].link,
-            "text": results.papers[i].title
+            "text": results.papers[i].score
         });
 
         var $authors = $("<span>", {
