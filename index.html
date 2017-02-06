@@ -103,11 +103,11 @@
             <p class="heading">Sort by</p>
 
             <p>
-                <select class="form-control">
-                    <option>Relevance</option>
-                    <option>Date ascending</option>
-                    <option>Date descending</option>
-                    <option>Reference count</option>
+                <select class="form-control" id="sort-dropdown">
+                    <option value="relevance">Relevance</option>
+                    <option value="date_asc">Date ascending</option>
+                    <option value="date_desc">Date descending</option>
+                    <option value="ref_count">Reference count</option>
                 </select>
             </p>
 
@@ -173,6 +173,13 @@ var API_FIELDS = {
     "total_results": "opensearch:totalResults"
 };
 
+// The fields that can be used in the API query to specify sort order
+var SORT_FIELDS = {
+    "relevance": "+relevancy",
+    "date_asc": "+coverDate",
+    "date_desc": "-coverDate"
+}
+
 // Regular expression to match dates in the format DD/MM/YYYY or DD-MM-YYYY
 var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
@@ -221,6 +228,12 @@ function search(query) {
 
     // Store the filtering applied so that we can pass it to rankResults()
     var filtering = {};
+
+    filtering["sort"] = $("#sort-dropdown").val();
+
+    if (filtering["sort"] in SORT_FIELDS) {
+        query_data["sort"] = SORT_FIELDS[filtering["sort"]];
+    }
 
     // Remove error messages from date inputs if there was an error previously
     $("#date-filter .help-block").text("");
