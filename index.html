@@ -34,7 +34,7 @@
     }
 
     .date-input {
-        width: 100px;
+        width: 120px;
     }
 
     .heading {
@@ -113,16 +113,21 @@
 
             <p class="heading">Filters</p>
 
-            <p class="filter">
+            <p class="filter" id="date-filter">
                 <label>
                     <input type="checkbox" onchange="toggleFilter(this)">
                     Date between
                 </label>
                 <br />
                 <span class="filter-controls">
-                    <input type="text" class="date-input form-control" /> and
-                    <input type="text" class="date-input form-control" />
+                    <input type="text" class="date-input form-control"
+                           placeholder="dd/mm/yyyy" />
+                    and
+                    <input type="text" class="date-input form-control"
+                           placeholder="dd/mm/yyyy" />
                 </span>
+
+                <span class="help-block"></span>
             </p>
 
             <p class="filter">
@@ -168,12 +173,87 @@ var API_FIELDS = {
     "total_results": "opensearch:totalResults"
 };
 
+// Regular expression to match dates in the format DD/MM/YYYY or DD-MM-YYYY
+var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
+
+/*
+ * Return a Date object from a string
+ */
+function parseDate(date_text) {
+    var res = date_regex.exec(date_text);
+
+    // Return null if the date string did not match the regex
+    if (!res) {
+        return null;
+    }
+
+    var day = parseInt(res[1]);
+    var month = parseInt(res[2]);
+    var year = parseInt(res[3]);
+
+    // Return null is any of day, month or year are out of range
+    if (day <= 0 || day > 31 || month <=0 || month > 12 || year <= 0) {
+        return null;
+    }
+
+    var d = new Date(year, month, day);
+    return d;
+}
+
 /*
  * Send an AJAX request to search ScienceDirect with the search query provided
  * and use the filters selected on the page. Call rankResults() when the request
  * completes
  */
 function search(query) {
+
+    if (!query) {
+        return false;
+    }
+
+    var query_data = {
+        "apiKey": API_KEY,
+        "httpAccept": "application/json",
+        "field": Object.values(API_FIELDS).join(","),
+        "count": 50,
+        "query": query
+    };
+
+    // Store the filtering applied so that we can pass it to rankResults()
+    var filtering = {};
+
+    // Remove error messages from date inputs if there was an error previously
+    $("#date-filter .help-block").text("");
+    $("#date-filter .filter-controls").removeClass("has-error");
+
+    // If date filtering is selected...
+    if ($("#date-filter input[type=checkbox]").is(":checked")) {
+        var $date_boxes = $("#date-filter .date-input");
+
+        var start_date = parseDate($date_boxes[0].value);
+        var end_date = parseDate($date_boxes[1].value);
+
+        if (!start_date || !end_date) {
+            $date_boxes.parent().addClass("has-error");
+            $("#date-filter .help-block").text("Invalid start/end date");
+            return false;
+            }
+
+        else if (start_date >= end_date) {
+            $("#date-filter .help-block").text("Start date must be before end date");
+            return false;
+        }
+
+        else {
+            // Add date range to data to be sent to API. Unfortunately the
+            // lowest granularity for date filtering is years
+            query_data["date"] = start_date.getFullYear() + "-" + end_date.getFullYear();
+
+            filtering["start_date"] = start_date;
+            filtering["end_date"] = end_date;
+        }
+    }
+
     $("#search-results").children().hide();
     $("#message").text("Loading...").show();;
 
@@ -181,20 +261,14 @@ function search(query) {
     $("#search-area input").blur();
 
     $.ajax(API_URL, {
-        "data": {
-            "apiKey": API_KEY,
-            "httpAccept": "application/json",
-            "field": Object.values(API_FIELDS).join(","),
-            "count": 50,
-            "query": query
-        },
+        "data": query_data,
 
         "error": function() {
             $("#message").text("Unexpected error querying ScienceDirect :(");
         },
 
         "success": function(data, textStatus) {
-            rankResults(data);
+            rankResults(data, filtering);
         }
     });
 }
@@ -203,7 +277,7 @@ function search(query) {
  * Format the search results from ScienceDirect and send to our server to be
  * ranked, and call showSearchResults() when it is complete
  */
-function rankResults(results) {
+function rankResults(results, filtering) {
     var formatted_results = {
         "query": results["search-results"]["opensearch:Query"]["@searchTerms"],
         "papers": []
@@ -211,6 +285,9 @@ function rankResults(results) {
 
     if (results["search-results"][API_FIELDS.total_results] > 0) {
         var papers = results["search-results"]["entry"];
+
+        var start_date = filtering.start_date || null;
+        var end_date = filtering.end_date || null;
 
         for (var i=0; i<papers.length; i++) {
 
@@ -224,7 +301,7 @@ function rankResults(results) {
             var authors = [];
 
             // Check that the authors list is present
-            if (API_FIELDS.authors in papers[i] &&
+            if (API_FIELDS.authors in papers[i] && papers[i][API_FIELDS.authors] &&
                 "author" in papers[i][API_FIELDS.authors]) {
 
                 var authors_list = papers[i].authors.author;
@@ -238,13 +315,30 @@ function rankResults(results) {
                 authors = ["N/A"];
             }
 
-            formatted_results.papers.push({
+            var p = {
                 "title": papers[i][API_FIELDS.title],
                 "link": link,
                 "authors": authors,
                 "published_date": papers[i][API_FIELDS.published_date][0]["$"],
                 "abstract": papers[i][API_FIELDS.abstract],
-            });
+            };
+
+            // Convert published date from YYYY-MM-DD to DD-MM-YYYY format
+            var d = p.published_date;
+            p.published_date = d.substr(8, 2) + "-" + d.substr(5,2) + "-" + d.substr(0, 4);
+
+            // If start date and end date filtering is applied then check the
+            // date is in the correct range (since API only filters by year)
+            if (start_date !== null && end_date !== null) {
+                var pub_date = parseDate(p.published_date);
+
+                // Skip if out of range
+                if (pub_date < start_date || pub_date > end_date) {
+                    continue;
+                }
+            }
+
+            formatted_results.papers.push(p);
         }
     }
 
