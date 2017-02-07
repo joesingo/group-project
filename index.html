@@ -317,7 +317,7 @@ function showSearchResults(results) {
     for (var i=0; i<results.papers.length; i++) {
         var $link = $("<a>", {
             "href": results.papers[i].link,
-            "text": results.papers[i].score
+            "text": results.papers[i].title
         });
 
         var $authors = $("<span>", {
