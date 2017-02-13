@@ -1,0 +1,58 @@
+body {
+        background: #f8f8f8;
+    }
+
+    label {
+        font-weight: normal;
+    }
+
+    #main-container {
+        width: 60%;
+        margin: auto;
+    }
+
+    .grid-row {
+        display: table-row;
+    }
+
+    .grid-cell {
+        display: table-cell;
+        padding: 10px;
+    }
+
+    .date-input {
+        width: 120px;
+    }
+
+    .heading {
+        font-weight: bold;
+        font-size: 1.3em;
+    }
+
+    #search-results {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        height: 100%;
+    }
+
+    #search-area {
+        vertical-align: bottom;
+    }
+
+    #search-results li a {
+        font-size: 1.2em;
+    }
+
+    .authors, .published-date {
+        font-size: 0.9em;
+    }
+
+    .published-date {
+        float: right;
+    }
+
+    .abstract-excerpt {
+        color: gray;
+    }
