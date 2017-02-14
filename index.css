@@ -14,16 +14,15 @@ body {
 }
 
 #SF-container {
-    width: 60%;
     position: relative;
     margin-top: 2%;
 }
 
 #Result-container {
-  width: 60%;
-  position: relative;
-  margin: 0 auto;
-  margin-top: 2%;
+    width: 60%;
+    position: relative;
+    margin: 0 auto;
+    margin-top: 2%;
 }
 
 .Searching {
@@ -48,16 +47,8 @@ label {
 .Sorting_Filtering {
   position: fixed;
   z-index: 99;
-  width: 10%;
   margin-left: 2%;
 }
-
-
-
-
-
-
-
 
     #search-results {
         background: white;
