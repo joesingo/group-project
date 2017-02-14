@@ -168,12 +168,18 @@ var API_FIELDS = {
     "total_results": "opensearch:totalResults"
 };
 
+var ranked = { "papers" : [] };
+
+
 /*
  * Send an AJAX request to search ScienceDirect with the search query provided
  * and use the filters selected on the page. Call rankResults() when the request
  * completes
  */
 function search(query) {
+    
+    ranked = { "papers" : [] };
+
     $("#search-results").children().hide();
     $("#message").text("Loading...").show();;
 
@@ -204,6 +210,7 @@ function search(query) {
  * ranked, and call showSearchResults() when it is complete
  */
 function rankResults(results) {
+
     var formatted_results = {
         "query": results["search-results"]["opensearch:Query"]["@searchTerms"],
         "papers": []
@@ -244,30 +251,56 @@ function rankResults(results) {
                 "authors": authors,
                 "published_date": papers[i][API_FIELDS.published_date][0]["$"],
                 "abstract": papers[i][API_FIELDS.abstract],
-		"score": 0
             });
+        }
 
-	    //increase score for age
+	rank(formatted_results);
 
-	    var year = formatted_results.papers[i].published_date.slice(0,4);
-	    var month = formatted_results.papers[i].published_date.slice(5,7);
+    }
+
+    // TODO: Send formatted_results to our server via AJAX to do the ranking and
+    // get related keywords, and call showSearchResults() when finished
+}
+
+
+function rank(results){
+
+	var startSize = ranked.papers.length;
+
+	for (var i=0; i<results.papers.length; i++){
+		ranked.papers.push({
+		"title": results.papers[i]["title"],
+                "link": results.papers[i]["link"],
+                "authors": results.papers[i]["authors"],
+                "published_date": results.papers[i]["published_date"],
+                "abstract": results.papers[i]["abstract"],
+		"score": 0
+	});
+	}
+
+	//increase score for age
+
+	for (var i=startSize; i<ranked.papers.length; i++){
+
+	    var year = ranked.papers[i].published_date.slice(0,4);
+	    var month = ranked.papers[i].published_date.slice(5,7);
 
 	    var date = new Date();
-;
+
 	    var age_yr = date.getFullYear() - year;
 	    var age_mth = date.getMonth() + 1 - month;
 
             var increase = 50 - (age_yr*12 + age_mth);
 	    
 	    if(increase < 0){
-		increase = 0;
+	        increase = 0;
 	    }
 
-	    formatted_results.papers[i].score += increase;
-        }
+	    ranked.papers[i].score += increase;
+	}
 
 	//sorting results by score
-	formatted_results.papers.sort(function (a,b){
+	ranked.papers.sort(function (a,b){
 		var sortStatus = 0;
 		if(a.score>b.score){
 		    sortStatus = -1;
@@ -277,13 +310,19 @@ function rankResults(results) {
 		return sortStatus;
 	});
 
-    }
+	var formatted_results = {
+            "query": results["query"],
+            "papers": ranked.papers
+    	};
 
-    // TODO: Send formatted_results to our server via AJAX to do the ranking and
-    // get related keywords, and call showSearchResults() when finished
+	console.log(formatted_results);
 
-    formatted_results.related_keywords = ["maths", "computer science", "physics"];
-    showSearchResults(formatted_results);
+	show(formatted_results);
+}
+
+function show(formatted_results){
+	formatted_results.related_keywords = ["maths", "computer science", "physics"];
+    	showSearchResults(formatted_results);
 }
 
 /*
