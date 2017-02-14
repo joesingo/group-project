@@ -2,44 +2,36 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Scientific Paper Managment Information System</title>
 
-    <!-- Bootstrap for CSS -->
-    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" href="index.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Making the design of the website usign Bootstrap and an external CSS -->
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"  integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <!-- For mobiles -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!--Adding the Logo to the website-->
+    <div class="Title">
+    <!--<img src="../Yr2_group_project/Spapers_title.jpg"/>-->
+    <img src="../group-project/Spapers_title.jpg"/>
+    </div>
 </head>
 <body>
 
 
-<div id="main-container">
-
-    <div class="grid-row">
-
-        <!-- Title/logo -->
-        <div class="grid-cell">
-            <h1>Scientific Papers</h1>
-        </div>
-
+<div class="Searching">
         <!-- Search box and search button -->
         <form class="grid-cell form-inline" id="search-area"
-              onsubmit="search(this.query.value); return false">
-
-            <input type="text" placeholder="Enter keywords..." class="form-control"
-                   name="query" />
+            onsubmit="search(this.query.value); return false">
+            <input type="text" placeholder="Enter keywords..." class="form-control" maxlength="380" size="150" name="query" />
             <button class="btn btn-default">Search</button>
         </form>
-    </div>
+</div>
 
-    <div class="grid-row">
-
+<div id="SF-container">
         <!-- Sorting and filtering options -->
-        <div class="grid-cell">
-
+        <div class="Sorting_Filtering">
             <p class="heading">Sort by</p>
-
             <p>
                 <select class="form-control" id="sort-dropdown">
                     <option value="relevance">Relevance</option>
@@ -50,7 +42,6 @@
             </p>
 
             <p class="heading">Filters</p>
-
             <p class="filter" id="date-filter">
                 <label>
                     <input type="checkbox" onchange="toggleFilter(this)">
@@ -64,21 +55,20 @@
                     <input type="text" class="date-input form-control"
                            placeholder="dd/mm/yyyy" />
                 </span>
-
                 <span class="help-block"></span>
             </p>
-
             <p class="filter">
                 <label>
                     <input type="checkbox" onchange="toggleFilter(this)">
                     Author:
                 </label>
                 <span class="filter-controls">
-                    <input type="text" class="form-control" />
+                    <input type="text" class="form-control" maxlength="50"/>
                 </span>
             </p>
         </div>
-
+</div>
+<div id="Result-container">
         <div class="grid-cell">
             <!-- Search results -->
             <div id="search-results">
@@ -93,7 +83,6 @@
                 <ol id="results-list"></ol>
             </div>
         </div>
-    </div>
 </div>
 
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
