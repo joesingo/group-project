@@ -1,33 +1,63 @@
 body {
         background: #f8f8f8;
+        margin:0;
+        width: 100%;
+        height: 100%;
     }
 
-    label {
-        font-weight: normal;
-    }
+.Title{
+    position: static;
+    display: block;
+    margin-left: 30%;
+    height: 185px;
+    width: 450px;
+}
 
-    #main-container {
-        width: 60%;
-        margin: auto;
-    }
+#SF-container {
+    width: 60%;
+    position: relative;
+    margin-top: 2%;
+}
 
-    .grid-row {
-        display: table-row;
-    }
+#Result-container {
+  width: 60%;
+  position: relative;
+  margin: 0 auto;
+  margin-top: 2%;
+}
 
-    .grid-cell {
-        display: table-cell;
-        padding: 10px;
-    }
+.Searching {
+    position: relative;
+    margin-top: 5%;
+    margin-left: 20%;
+}
 
-    .date-input {
-        width: 120px;
-    }
+label {
+    font-weight: normal;
+}
 
-    .heading {
-        font-weight: bold;
-        font-size: 1.3em;
-    }
+.date-input {
+    width: 120px;
+}
+
+.heading {
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+.Sorting_Filtering {
+  position: fixed;
+  z-index: 99;
+  width: 10%;
+  margin-left: 2%;
+}
+
+
+
+
+
+
+
 
     #search-results {
         background: white;
