@@ -1,0 +1,79 @@
+body {
+        background: #f8f8f8;
+        margin:0;
+        width: 100%;
+        height: 100%;
+    }
+
+.Title{
+    position: static;
+    display: block;
+    margin-left: 30%;
+    height: 185px;
+    width: 450px;
+}
+
+#SF-container {
+    position: relative;
+    margin-top: 2%;
+}
+
+#Result-container {
+    width: 60%;
+    position: relative;
+    margin: 0 auto;
+    margin-top: 2%;
+}
+
+.Searching {
+    position: relative;
+    margin-top: 5%;
+    margin-left: 20%;
+}
+
+label {
+    font-weight: normal;
+}
+
+.date-input {
+    width: 120px;
+}
+
+.heading {
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+.Sorting_Filtering {
+  position: fixed;
+  z-index: 99;
+  margin-left: 2%;
+}
+
+    #search-results {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        height: 100%;
+    }
+
+    #search-area {
+        vertical-align: bottom;
+    }
+
+    #search-results li a {
+        font-size: 1.2em;
+    }
+
+    .authors, .published-date {
+        font-size: 0.9em;
+    }
+
+    .published-date {
+        float: right;
+    }
+
+    .abstract-excerpt {
+        color: gray;
+    }
