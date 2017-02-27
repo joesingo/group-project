@@ -101,6 +101,8 @@ var API_FIELDS = {
     "total_results": "opensearch:totalResults"
 };
 
+var ranked = { "papers" : [] };
+  
 // The fields that can be used in the API query to specify sort order
 var SORT_FIELDS = {
     "relevance": "+relevancy",
@@ -141,6 +143,7 @@ function parseDate(date_text) {
  * completes
  */
 function search(query) {
+    ranked = { "papers" : [] };
 
     if (!query) {
         return false;
@@ -219,6 +222,7 @@ function search(query) {
  * ranked, and call showSearchResults() when it is complete
  */
 function rankResults(results, filtering) {
+  
     var formatted_results = {
         "query": results["search-results"]["opensearch:Query"]["@searchTerms"],
         "papers": []
@@ -281,13 +285,76 @@ function rankResults(results, filtering) {
 
             formatted_results.papers.push(p);
         }
+
+	rank(formatted_results);
+
     }
 
     // TODO: Send formatted_results to our server via AJAX to do the ranking and
     // get related keywords, and call showSearchResults() when finished
+}
 
-    formatted_results.related_keywords = ["maths", "computer science", "physics"];
-    showSearchResults(formatted_results);
+
+function rank(results){
+
+	var startSize = ranked.papers.length;
+
+	for (var i=0; i<results.papers.length; i++){
+		ranked.papers.push({
+		"title": results.papers[i]["title"],
+                "link": results.papers[i]["link"],
+                "authors": results.papers[i]["authors"],
+                "published_date": results.papers[i]["published_date"],
+                "abstract": results.papers[i]["abstract"],
+		"score": 0
+	});
+	}
+
+	//increase score for age
+
+	for (var i=startSize; i<ranked.papers.length; i++){
+
+	    var year = ranked.papers[i].published_date.slice(0,4);
+	    var month = ranked.papers[i].published_date.slice(5,7);
+
+	    var date = new Date();
+
+	    var age_yr = date.getFullYear() - year;
+	    var age_mth = date.getMonth() + 1 - month;
+
+            var increase = 50 - (age_yr*12 + age_mth);
+	    
+	    if(increase < 0){
+	        increase = 0;
+	    }
+
+	    ranked.papers[i].score += increase;
+	}
+
+	//sorting results by score
+	ranked.papers.sort(function (a,b){
+		var sortStatus = 0;
+		if(a.score>b.score){
+		    sortStatus = -1;
+		}else if(a.score<b.score){
+		    sortStatus = 1;
+		}
+		return sortStatus;
+	});
+
+	var formatted_results = {
+            "query": results["query"],
+            "papers": ranked.papers
+    	};
+
+	console.log(formatted_results);
+
+	show(formatted_results);
+}
+
+function show(formatted_results){
+	formatted_results.related_keywords = ["maths", "computer science", "physics"];
+    	showSearchResults(formatted_results);
 }
 
 /*
