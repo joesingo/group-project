@@ -102,7 +102,7 @@ var API_FIELDS = {
 };
 
 var ranked = { "papers" : [] };
-  
+
 // The fields that can be used in the API query to specify sort order
 var SORT_FIELDS = {
     "relevance": "+relevancy",
@@ -138,6 +138,15 @@ function parseDate(date_text) {
 }
 
 /*
+ * Return the search query to send to the API. The format is described at this
+ * page: http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm
+ */
+function buildQuery(search_terms) {
+    return "key(" + search_terms + ") AND abs(" + search_terms + ") AND title(" +
+           search_terms + ")";
+}
+
+/*
  * Send an AJAX request to search ScienceDirect with the search query provided
  * and use the filters selected on the page. Call rankResults() when the request
  * completes
@@ -154,11 +163,14 @@ function search(query) {
         "httpAccept": "application/json",
         "field": Object.values(API_FIELDS).join(","),
         "count": 50,
-        "query": query
+        "query": buildQuery(query)
     };
 
-    // Store the filtering applied so that we can pass it to rankResults()
-    var filtering = {};
+    // Store the original search term and the filtering applied so that we can
+    // pass it to rankResults()
+    var filtering = {
+        "search_term": query
+    };
 
     filtering["sort"] = $("#sort-dropdown").val();
 
@@ -222,9 +234,9 @@ function search(query) {
  * ranked, and call showSearchResults() when it is complete
  */
 function rankResults(results, filtering) {
-  
+
     var formatted_results = {
-        "query": results["search-results"]["opensearch:Query"]["@searchTerms"],
+        "query": filtering["search_term"],
         "papers": []
     };
 
@@ -286,7 +298,7 @@ function rankResults(results, filtering) {
             formatted_results.papers.push(p);
         }
 
-	rank(formatted_results);
+	    rank(formatted_results);
 
     }
 
@@ -322,8 +334,8 @@ function rank(results){
 	    var age_yr = date.getFullYear() - year;
 	    var age_mth = date.getMonth() + 1 - month;
 
-            var increase = 50 - (age_yr*12 + age_mth);
-	    
+        var increase = 50 - (age_yr*12 + age_mth);
+
 	    if(increase < 0){
 	        increase = 0;
 	    }
@@ -343,18 +355,16 @@ function rank(results){
 	});
 
 	var formatted_results = {
-            "query": results["query"],
-            "papers": ranked.papers
-    	};
-
-	console.log(formatted_results);
+        "query": results["query"],
+        "papers": ranked.papers
+	};
 
 	show(formatted_results);
 }
 
 function show(formatted_results){
 	formatted_results.related_keywords = ["maths", "computer science", "physics"];
-    	showSearchResults(formatted_results);
+    showSearchResults(formatted_results);
 }
 
 /*
