@@ -26,6 +26,11 @@
             <input type="text" placeholder="Enter keywords..." class="form-control" maxlength="380" size="150" name="query" />
             <button class="btn btn-default">Search</button>
         </form>
+        <a href="#" id="advanced-search-link" onclick="useAdvancedSearch()">Advanced search</a>
+        <span id="advanced-search-span" style="display: none">
+            Using advanced search. You can use the search language described
+            <a href="http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm">here</a>
+        </span>
 </div>
 
 <div id="SF-container">
@@ -113,6 +118,8 @@ var SORT_FIELDS = {
 // Regular expression to match dates in the format DD/MM/YYYY or DD-MM-YYYY
 var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
+var advanced_search = false;
+
 /*
  * Return a Date object from a string
  */
@@ -135,6 +142,16 @@ function parseDate(date_text) {
 
     var d = new Date(year, month, day);
     return d;
+}
+
+/*
+ * Show the advanced search help text and remove the 'Advanced search' link
+ *
+ */
+function useAdvancedSearch() {
+    $("#advanced-search-link").hide();
+    $("#advanced-search-span").show();
+    advanced_search = true;
 }
 
 /*
@@ -163,7 +180,7 @@ function search(query) {
         "httpAccept": "application/json",
         "field": Object.values(API_FIELDS).join(","),
         "count": 50,
-        "query": buildQuery(query)
+        "query": (advanced_search ? query : buildQuery(query))
     };
 
     // Store the original search term and the filtering applied so that we can
