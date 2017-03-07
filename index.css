@@ -50,30 +50,34 @@ label {
   margin-left: 2%;
 }
 
-    #search-results {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 20px;
-        height: 100%;
-    }
+#search-results {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    height: 100%;
+}
 
-    #search-area {
-        vertical-align: bottom;
-    }
+#search-area {
+    vertical-align: bottom;
+}
 
-    #search-results li a {
-        font-size: 1.2em;
-    }
+#search-results li a {
+    font-size: 1.2em;
+}
 
-    .authors, .published-date {
-        font-size: 0.9em;
-    }
+.authors, .published-date {
+    font-size: 0.9em;
+}
 
-    .published-date {
-        float: right;
-    }
+.published-date {
+    float: right;
+}
 
-    .abstract-excerpt {
-        color: gray;
-    }
+.abstract-excerpt {
+    color: gray;
+}
+
+.highlight {
+    background: yellow;
+}

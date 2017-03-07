@@ -120,6 +120,11 @@ var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
 var advanced_search = false;
 
+// Regex to remove field names that can be used in the advanced search so we
+// can extract the actual search terms when highlighting keywords
+var advanced_search_fields_regexp = new RegExp("tak|abs|aut|aus|aff|pdt|key|" +
+                                               "ref|ttl|src|sub|vis|pag", "gi")
+
 /*
  * Return a Date object from a string
  */
@@ -385,6 +390,27 @@ function show(formatted_results){
 }
 
 /*
+ * Find the given keywords in the given string of text and wrap them in a span
+ * tag so they can be highlighted. Return an object containing the new text and
+ * the number of matches
+ */
+function highlightKeywords(text, keywords) {
+    var regexp = new RegExp(keywords.join("|"), "gi");
+    var matches = 0;
+
+    var replacer = function(match) {
+        matches++;
+        return "<span class='highlight'>" + match + "</span>";
+    }
+
+    var new_text = text.replace(regexp, replacer);
+    return {
+        "text": new_text,
+        "matches": matches
+    };
+}
+
+/*
  * Show the actual search results on the page
  */
 function showSearchResults(results) {
@@ -411,11 +437,27 @@ function showSearchResults(results) {
         }
     }
 
+    if (advanced_search) {
+        // 1. Remove AND, OR, NOT and brackets
+        // 2. Remove field names (e.g. abs, ttl, ref)
+        results.query = results.query.replace(/AND|OR|NOT|\(|\)/gi, "")
+                                     .replace(advanced_search_fields_regexp, "");
+    }
+
+    // Remove excessive whitespace and split by space to get keywords
+    var keywords = results.query.replace(/\s+/g, " ").split(" ");
+
     // Show the papers
     for (var i=0; i<results.papers.length; i++) {
+
+        var keywords_matches = 0;
+
+        var hi_title = highlightKeywords(results.papers[i].title, keywords);
+        keywords_matches += hi_title.matches;
+
         var $link = $("<a>", {
             "href": results.papers[i].link,
-            "text": results.papers[i].title
+            "html": hi_title.text
         });
 
         var $authors = $("<span>", {
@@ -441,13 +483,20 @@ function showSearchResults(results) {
             abstract = abstract.substr(0, 500) + "...";
         }
 
+        var hi_abs = highlightKeywords(abstract, keywords);
+        keywords_matches += hi_abs.matches;
+
         var $p = $("<p>", {
-            "text": abstract,
+            "html": hi_abs.text,
             "class": "abstract-excerpt"
         });
 
+        var $p2 = $("<p>", {
+            "text": keywords_matches + " matches"
+        })
+
         var $li = $("<li>");
-        $li.append($link, "<br />", $authors, $date, $p);
+        $li.append($link, "<br />", $authors, $date, $p, $p2);
         $("#results-list").append($li);
     }
 }
