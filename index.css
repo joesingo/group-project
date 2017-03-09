@@ -62,7 +62,7 @@ label {
     vertical-align: bottom;
 }
 
-#search-results li a {
+#search-results li a.paper-title {
     font-size: 1.2em;
 }
 
@@ -80,4 +80,9 @@ label {
 
 .highlight {
     background: yellow;
+}
+
+a.show-more-link {
+    font-size: 1em;
+    cursor: pointer;
 }

@@ -106,14 +106,15 @@ var API_FIELDS = {
     "total_results": "opensearch:totalResults"
 };
 
-var ranked = { "papers" : [] };
-
 // The fields that can be used in the API query to specify sort order
 var SORT_FIELDS = {
     "relevance": "+relevancy",
     "date_asc": "+coverDate",
     "date_desc": "-coverDate"
 }
+
+// The maximum number of characters to show in the abstract before truncating
+var MAX_ABSTRACT_LENGTH = 500;
 
 // Regular expression to match dates in the format DD/MM/YYYY or DD-MM-YYYY
 var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
@@ -174,8 +175,6 @@ function buildQuery(search_terms) {
  * completes
  */
 function search(query) {
-    ranked = { "papers" : [] };
-
     if (!query) {
         return false;
     }
@@ -362,6 +361,19 @@ function highlightKeywords(text, keywords) {
 }
 
 /*
+ * Show the whole abstract for a paper for when the abstract is over
+ * MAX_ABSTRACT_LENGTH characters and is truncated. This is called when the
+ * 'Show more' link is cliced
+ */
+function showMoreAbstract(link) {
+    var $more_span = $(link).parent();
+    var $abstract = $more_span.parent();
+
+    $more_span.hide();
+    $abstract.find(".hidden").removeClass("hidden");
+}
+
+/*
  * Show the actual search results on the page
  */
 function showSearchResults(results) {
@@ -408,7 +420,8 @@ function showSearchResults(results) {
 
         var $link = $("<a>", {
             "href": results.papers[i].link,
-            "html": hi_title.text
+            "html": hi_title.text,
+            "class": "paper-title"
         });
 
         var $authors = $("<span>", {
@@ -429,16 +442,36 @@ function showSearchResults(results) {
             abstract = abstract.substr(8);
         }
 
+        var abstract_html = "";
+
         // Trim the abstract if it is too long
-        if (abstract.length > 500) {
-            abstract = abstract.substr(0, 500) + "...";
+        if (abstract.length > MAX_ABSTRACT_LENGTH) {
+            var more_link = "<a onclick='showMoreAbstract(this)' " +
+                                "class='show-more-link'>Show more</a>";
+            var show_more_span = "<span>..." + more_link + "</span>";
+
+            // Split the abstract up into shown part and hidden part
+            var shown_excerpt = abstract.substr(0, MAX_ABSTRACT_LENGTH);
+            var hidden_excerpt = abstract.substr(MAX_ABSTRACT_LENGTH);
+
+            // Highlight shown and hidden parts and increase match counter
+            var hi_shown = highlightKeywords(shown_excerpt, keywords);
+            var hi_hidden = highlightKeywords(hidden_excerpt, keywords);
+            keywords_matches += hi_shown.matches;
+            keywords_matches += hi_hidden.matches;
+
+            abstract_html = hi_shown.text + show_more_span + "<span class='hidden'>" +
+                            hi_hidden.text + "</span>";
+        }
+        else {
+            var hi_abs = highlightKeywords(abstract, keywords);
+            keywords_matches += hi_abs.matches;
+
+            abstract_html = hi_abs.text;
         }
 
-        var hi_abs = highlightKeywords(abstract, keywords);
-        keywords_matches += hi_abs.matches;
-
         var $p = $("<p>", {
-            "html": hi_abs.text,
+            "html": abstract_html,
             "class": "abstract-excerpt"
         });
 
