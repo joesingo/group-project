@@ -102,7 +102,7 @@ var API_FIELDS = {
 };
 
 var ranked = { "papers" : [] };
-  
+
 // The fields that can be used in the API query to specify sort order
 var SORT_FIELDS = {
     "relevance": "+relevancy",
@@ -222,7 +222,7 @@ function search(query) {
  * ranked, and call showSearchResults() when it is complete
  */
 function rankResults(results, filtering) {
-  
+
     var formatted_results = {
         "query": results["search-results"]["opensearch:Query"]["@searchTerms"],
         "papers": []
@@ -285,14 +285,10 @@ function rankResults(results, filtering) {
 
             formatted_results.papers.push(p);
         }
-
-	// rank(formatted_results);
-
     }
 
-    // TODO: Send formatted_results to our server via AJAX to do the ranking and
+    // Send formatted_results to our server via AJAX to do the ranking and
     // get related keywords, and call showSearchResults() when finished
-
     $.ajax("rank.php", {
         "method": "POST",
         "data": {
@@ -304,25 +300,16 @@ function rankResults(results, filtering) {
         },
 
         "success": function(data, textStatus) {
-            console.log("finished: " + data);
-	    var temp = JSON.parse(data);
-
+	        var temp = JSON.parse(data);
             showSearchResults(temp);
         }
     });
-}
-
-
-function show(formatted_results){
-	formatted_results.related_keywords = ["maths", "computer science", "physics"];
-    	showSearchResults(formatted_results);
 }
 
 /*
  * Show the actual search results on the page
  */
 function showSearchResults(results) {
-    console.log(results);
     $("#no-of-results").text(results.papers.length);
     $("#search-query").text(results.query);
     $("#results-list").text("");
