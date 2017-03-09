@@ -26,6 +26,11 @@
             <input type="text" placeholder="Enter keywords..." class="form-control" maxlength="380" size="150" name="query" />
             <button class="btn btn-default">Search</button>
         </form>
+        <a href="#" id="advanced-search-link" onclick="useAdvancedSearch()">Advanced search</a>
+        <span id="advanced-search-span" style="display: none">
+            Using advanced search. You can use the search language described
+            <a href="http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm">here</a>
+        </span>
 </div>
 
 <div id="SF-container">
@@ -113,6 +118,13 @@ var SORT_FIELDS = {
 // Regular expression to match dates in the format DD/MM/YYYY or DD-MM-YYYY
 var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
+var advanced_search = false;
+
+// Regex to remove field names that can be used in the advanced search so we
+// can extract the actual search terms when highlighting keywords
+var advanced_search_fields_regexp = new RegExp("tak|abs|aut|aus|aff|pdt|key|" +
+                                               "ref|ttl|src|sub|vis|pag", "gi")
+
 /*
  * Return a Date object from a string
  */
@@ -138,6 +150,25 @@ function parseDate(date_text) {
 }
 
 /*
+ * Show the advanced search help text and remove the 'Advanced search' link
+ *
+ */
+function useAdvancedSearch() {
+    $("#advanced-search-link").hide();
+    $("#advanced-search-span").show();
+    advanced_search = true;
+}
+
+/*
+ * Return the search query to send to the API. The format is described at this
+ * page: http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm
+ */
+function buildQuery(search_terms) {
+    return "key(" + search_terms + ") AND abs(" + search_terms + ") AND title(" +
+           search_terms + ")";
+}
+
+/*
  * Send an AJAX request to search ScienceDirect with the search query provided
  * and use the filters selected on the page. Call rankResults() when the request
  * completes
@@ -154,11 +185,14 @@ function search(query) {
         "httpAccept": "application/json",
         "field": Object.values(API_FIELDS).join(","),
         "count": 50,
-        "query": query
+        "query": (advanced_search ? query : buildQuery(query))
     };
 
-    // Store the filtering applied so that we can pass it to rankResults()
-    var filtering = {};
+    // Store the original search term and the filtering applied so that we can
+    // pass it to rankResults()
+    var filtering = {
+        "search_term": query
+    };
 
     filtering["sort"] = $("#sort-dropdown").val();
 
@@ -224,7 +258,7 @@ function search(query) {
 function rankResults(results, filtering) {
 
     var formatted_results = {
-        "query": results["search-results"]["opensearch:Query"]["@searchTerms"],
+        "query": filtering["search_term"],
         "papers": []
     };
 
@@ -300,10 +334,31 @@ function rankResults(results, filtering) {
         },
 
         "success": function(data, textStatus) {
-	        var temp = JSON.parse(data);
+            var temp = JSON.parse(data);
             showSearchResults(temp);
         }
     });
+}
+
+/*
+ * Find the given keywords in the given string of text and wrap them in a span
+ * tag so they can be highlighted. Return an object containing the new text and
+ * the number of matches
+ */
+function highlightKeywords(text, keywords) {
+    var regexp = new RegExp(keywords.join("|"), "gi");
+    var matches = 0;
+
+    var replacer = function(match) {
+        matches++;
+        return "<span class='highlight'>" + match + "</span>";
+    }
+
+    var new_text = text.replace(regexp, replacer);
+    return {
+        "text": new_text,
+        "matches": matches
+    };
 }
 
 /*
@@ -333,11 +388,27 @@ function showSearchResults(results) {
         }
     }
 
+    if (advanced_search) {
+        // 1. Remove AND, OR, NOT and brackets
+        // 2. Remove field names (e.g. abs, ttl, ref)
+        results.query = results.query.replace(/AND|OR|NOT|\(|\)/gi, "")
+                                     .replace(advanced_search_fields_regexp, "");
+    }
+
+    // Remove excessive whitespace and split by space to get keywords
+    var keywords = results.query.replace(/\s+/g, " ").split(" ");
+
     // Show the papers
     for (var i=0; i<results.papers.length; i++) {
+
+        var keywords_matches = 0;
+
+        var hi_title = highlightKeywords(results.papers[i].title, keywords);
+        keywords_matches += hi_title.matches;
+
         var $link = $("<a>", {
             "href": results.papers[i].link,
-            "text": results.papers[i].title
+            "html": hi_title.text
         });
 
         var $authors = $("<span>", {
@@ -363,13 +434,20 @@ function showSearchResults(results) {
             abstract = abstract.substr(0, 500) + "...";
         }
 
+        var hi_abs = highlightKeywords(abstract, keywords);
+        keywords_matches += hi_abs.matches;
+
         var $p = $("<p>", {
-            "text": abstract,
+            "html": hi_abs.text,
             "class": "abstract-excerpt"
         });
 
+        var $p2 = $("<p>", {
+            "text": keywords_matches + " matches"
+        })
+
         var $li = $("<li>");
-        $li.append($link, "<br />", $authors, $date, $p);
+        $li.append($link, "<br />", $authors, $date, $p, $p2);
         $("#results-list").append($li);
     }
 }
