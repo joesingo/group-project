@@ -91,6 +91,7 @@
         </div>
 </div>
 
+<script type="text/javascript" src="stop_words.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript">
 
@@ -409,6 +410,14 @@ function showSearchResults(results) {
 
     // Remove excessive whitespace and split by space to get keywords
     var keywords = results.query.replace(/\s+/g, " ").split(" ");
+
+    // Remove stop words from keywords since they do not need to be highlighted
+    for (var i=0; i<keywords.length; i++) {
+        if (STOP_WORDS.indexOf(keywords[i].toLowerCase()) != -1) {
+            keywords.splice(i, 1);
+            i--;
+        }
+    }
 
     // Show the papers
     for (var i=0; i<results.papers.length; i++) {
