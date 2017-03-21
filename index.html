@@ -97,6 +97,8 @@
 const API_KEY = "ba079b238ccdab296232e4ce8b9f5b6e";
 const API_URL = "https://api.elsevier.com/content/search/scidir";
 
+var stopWords = ["the","be","to","of","and","a","in","that","have","I","it","for","not","on","with","he","as","you","do","at","this","but","his","by"]
+
 var API_FIELDS = {
     "title": "dc:title",
     "abstract": "dc:description",
@@ -446,6 +448,16 @@ function showSearchResults(results) {
 
     // Remove excessive whitespace and split by space to get keywords
     var keywords = results.query.replace(/\s+/g, " ").split(" ");
+    keywords.unshift(results.query);
+
+    //removing common words
+    for(var i = keywords.length-1; i>=0; i--){
+	if(stopWords.includes(keywords[i])){
+	    keywords.splice(i,1);
+	}
+    }
+
+    console.log(keywords);
 
     // Show the papers
     for (var i=0; i<results.papers.length; i++) {
