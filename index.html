@@ -104,7 +104,8 @@ var API_FIELDS = {
     "authors": "authors",
     "published_date": "prism:coverDate",
     "url": "prism:url",
-    "total_results": "opensearch:totalResults"
+    "total_results": "opensearch:totalResults",
+    "keywords": "authkeywords"
 };
 
 // The fields that can be used in the API query to specify sort order
@@ -294,12 +295,21 @@ function rankResults(results, filtering) {
                 authors = ["N/A"];
             }
 
+            var keywords = [];
+            if (papers[i][API_FIELDS.keywords]) {
+                keywords = papers[i][API_FIELDS.keywords].split(" | ");
+            }
+            else {
+                keywords = [];
+            }
+
             var p = {
                 "title": papers[i][API_FIELDS.title],
                 "link": link,
                 "authors": authors,
                 "published_date": papers[i][API_FIELDS.published_date][0]["$"],
                 "abstract": papers[i][API_FIELDS.abstract],
+                "keywords": keywords
             };
 
             // Convert published date from YYYY-MM-DD to DD-MM-YYYY format
@@ -326,7 +336,7 @@ function rankResults(results, filtering) {
     $.ajax("rank.php", {
         "method": "POST",
         "data": {
-            "r": JSON.stringify(formatted_results),
+            "r":  ,
         },
 
         "error": function() {
