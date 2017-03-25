@@ -341,7 +341,7 @@ function rankResults(results, filtering) {
     $.ajax("rank.php", {
         "method": "POST",
         "data": {
-            "r":  ,
+            "r":  JSON.stringify(formatted_results),
         },
 
         "error": function() {
