@@ -355,6 +355,9 @@ function rankResults(results, filtering) {
                 search(temp["iterative_search"], true);
             }
             else {
+                for (var i=0; i<temp.debug.length; i++) {
+                    console.log("DEBUG: " + temp.debug[i]);
+                }
                 showSearchResults(temp);
             }
         }

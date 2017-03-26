@@ -16,6 +16,7 @@
             if (!isset($_SESSION["prev_searches"])) {
                 $_SESSION["prev_searches"] = array();
                 $_SESSION["prev_results"] = array();
+                $_SESSION["debug"] = array();
             }
         }
 
@@ -60,6 +61,7 @@
          * Send the results back to the client and clear all session variables
          */
         function send_results() {
+            $_SESSION["prev_results"]->debug = $_SESSION["debug"];
             echo json_encode($_SESSION["prev_results"]);
             session_destroy();
             exit();
@@ -78,6 +80,13 @@
 
         function sort_results() {
             usort($_SESSION["prev_results"]->papers, array($this, "cmp"));
+        }
+
+        /*
+         * Append $message to debug messages
+         */
+        function debug($message) {
+            $_SESSION["debug"][] = $message;
         }
     }
 
