@@ -23,8 +23,20 @@
             return count($_SESSION["prev_searches"]) + 1;
         }
 
+        function get_num_papers() {
+            return count($_SESSION["prev_results"]->papers);
+        }
+
+        function get_related_keywords() {
+            return $_SESSION["prev_results"]->related_keywords;
+        }
+
         function update_results($new_results) {
             if ($this->get_iteration_no() == 1) {
+
+                // Find common keywords from the first search
+                $new_results->related_keywords = find_common_keywords($new_results);
+
                 $_SESSION["prev_results"] = $new_results;
             }
             else {
@@ -39,7 +51,6 @@
             // Add this search query to the list of previous searches and
             // related keywords
             $_SESSION["prev_searches"][] = $query;
-            $_SESSION["prev_results"]->related_keywords[] = $query;
 
             echo '{"iterative_search": "' . $query . '"}';
             exit();
@@ -70,11 +81,19 @@
         }
     }
 
+    /*
+     * Return an array of top most common keywords from the search results
+     * provided
+     */
+    function find_common_keywords($results) {
+        $k = array("maths", "computer science", "physics");
+        return $k;
+    }
+
+
     $r = $_REQUEST["r"];
 
     $data = json_decode($r);
-
-    $data->related_keywords = array("maths", "computer science", "physics");
 
     for($i = 0; $i<count($data->papers); $i++){
         $data->papers[$i]->score = 0;
@@ -99,26 +118,27 @@
 
     $iter = new IterativeSearchSession();
 
-    // Adjust scores in $data->papers based on $iter->get_iteration_no()
-
-    // Only use the first 5 papers for demonstration purposes
-    $data->papers = array_slice($data->papers, 0, 5);
+    // TODO: Adjust scores in $data->papers based on $iter->get_iteration_no()
 
     $iter->update_results($data);
     $iter->sort_results();
 
-    // This bit is for demo purposes
-    switch ($iter->get_iteration_no()) {
-        case 1:
-            $iter->iterative_search("frog");
-            break;
+    $max_iterations = 10;
+    $min_papers = 60;  // TODO: Get this from client instead of hardcoding it
 
-        case 2:
-            $iter->iterative_search("cat");
-            break;
+    $i = $iter->get_iteration_no();
+    $related_keywords = $iter->get_related_keywords();
 
-        default:
-            $iter->send_results();
+    // Perform iterative search if we do not have enough papers, have not
+    // exceeded maximum iterations, and there are still related keywords left
+    if ($iter->get_num_papers() < $min_papers && $i < $max_iterations &&
+        $i <= count($related_keywords)) {
+
+        $iter->iterative_search($related_keywords[$i - 1]);
     }
+
+    // If reached here then we are not doing any more searches, so send final
+    // results
+    $iter->send_results();
 
 ?>
