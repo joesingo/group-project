@@ -176,7 +176,7 @@ function buildQuery(search_terms) {
  * and use the filters selected on the page. Call rankResults() when the request
  * completes
  */
-function search(query) {
+function search(query, iterative_search) {
     if (!query) {
         return false;
     }
@@ -233,11 +233,16 @@ function search(query) {
         }
     }
 
-    $("#search-results").children().hide();
-    $("#message").text("Loading...").show();;
+    if (iterative_search) {
+        $("#message").text("Searching for " + query + "...").show();;
+    }
+    else {
+        $("#search-results").children().hide();
+        $("#message").text("Loading...").show();;
 
-    $("#search-area input").val(query);
-    $("#search-area input").blur();
+        $("#search-area input").val(query);
+        $("#search-area input").blur();
+    }
 
     $.ajax(API_URL, {
         "data": query_data,
@@ -345,7 +350,16 @@ function rankResults(results, filtering) {
 
         "success": function(data, textStatus) {
             var temp = JSON.parse(data);
-            showSearchResults(temp);
+
+            if ("iterative_search" in temp) {
+                search(temp["iterative_search"], true);
+            }
+            else {
+                for (var i=0; i<temp.debug.length; i++) {
+                    console.log("DEBUG: " + temp.debug[i]);
+                }
+                showSearchResults(temp);
+            }
         }
     });
 }
