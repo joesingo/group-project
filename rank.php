@@ -17,11 +17,12 @@
                 $_SESSION["prev_searches"] = array();
                 $_SESSION["prev_results"] = array();
                 $_SESSION["debug"] = array();
+                $_SESSION["iteration_no"] = 1;
             }
         }
 
         function get_iteration_no() {
-            return count($_SESSION["prev_searches"]) + 1;
+            return $_SESSION["iteration_no"];
         }
 
         function get_num_papers() {
@@ -49,9 +50,9 @@
         }
 
         function iterative_search($query) {
-            // Add this search query to the list of previous searches and
-            // related keywords
+            // Add this search query to the list of previous searches
             $_SESSION["prev_searches"][] = $query;
+            $_SESSION["iteration_no"] += 1;
 
             echo '{"iterative_search": "' . $query . '"}';
             exit();
@@ -99,8 +100,9 @@
         return $k;
     }
 
-
     $r = $_REQUEST["r"];
+    $iter = new IterativeSearchSession();
+    $iter_number = $iter->get_iteration_no();
 
     $data = json_decode($r);
 
@@ -109,8 +111,8 @@
     }
 
     for($i = 0; $i<count($data->papers); $i++){
-        $year = (int)substr($data->papers[$i]->published_date,0,4);
-        $month = (int)substr($data->papers[$i]->published_date,5,7);
+        $year = (int)substr($data->papers[$i]->published_date,6,4);
+        $month = (int)substr($data->papers[$i]->published_date,3,2);
 
         $month_now = (int)date('n');
         $year_now = (int)date('Y');
@@ -118,16 +120,21 @@
         $age_yr = $year_now - $year;
         $age_mth = $month_now - $month;
 
-        $inc = 50 - ($age_yr*12 + $age_mth);
+        $inc = 500 - ($age_yr*12 + $age_mth);
 
         if($inc > 0){
             $data->papers[$i]->score += $inc;
         }
     }
 
-    $iter = new IterativeSearchSession();
 
-    // TODO: Adjust scores in $data->papers based on $iter->get_iteration_no()
+    // Adjust scores in $data->papers based on iteration number. $multiplier
+    // is always <= 1 and > 0, and decreases as $iter_number increases
+    $multiplier = 1 / (2 * $iter_number) + 0.5;
+
+    foreach ($data->papers as $paper) {
+        $paper->score = $paper->score * $multiplier;
+    }
 
     $iter->update_results($data);
     $iter->sort_results();
@@ -135,15 +142,14 @@
     $max_iterations = 10;
     $min_papers = 60;  // TODO: Get this from client instead of hardcoding it
 
-    $i = $iter->get_iteration_no();
     $related_keywords = $iter->get_related_keywords();
 
     // Perform iterative search if we do not have enough papers, have not
     // exceeded maximum iterations, and there are still related keywords left
-    if ($iter->get_num_papers() < $min_papers && $i < $max_iterations &&
-        $i <= count($related_keywords)) {
+    if ($iter->get_num_papers() < $min_papers && $iter_number < $max_iterations &&
+        $iter_number <= count($related_keywords)) {
 
-        $iter->iterative_search($related_keywords[$i - 1]);
+        $iter->iterative_search($related_keywords[$iter_number - 1]);
     }
 
     // If reached here then we are not doing any more searches, so send final
