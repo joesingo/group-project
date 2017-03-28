@@ -32,7 +32,7 @@ body {
 }
 
 label {
-    font-weight: normal;
+    font-weight: normal !important;
 }
 
 .date-input {
@@ -62,7 +62,7 @@ label {
     vertical-align: bottom;
 }
 
-#search-results li a {
+#search-results li a.paper-title {
     font-size: 1.2em;
 }
 
@@ -74,10 +74,15 @@ label {
     float: right;
 }
 
-.abstract-excerpt {
+.abstract-excerpt, .help-text {
     color: gray;
 }
 
 .highlight {
     background: yellow;
+}
+
+a.show-more-link {
+    font-size: 1em;
+    cursor: pointer;
 }
