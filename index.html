@@ -38,6 +38,17 @@
                 You can use the search language described
                 <a href="http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm">here</a>
             </p>
+	    <p>
+		<label>
+            		<select class="form-control" id="perPage">
+                    	    <option value=5>5</option>
+                    	    <option value=10>10</option>
+                    	    <option value=15>15</option>
+                    	    <option value=20>20</option>
+                	</select>
+			papers per page	
+		</label>
+	     </p>
         </form>
 </div>
 
@@ -79,6 +90,18 @@
                     <input type="text" class="form-control" maxlength="50"/>
                 </span>
             </p>
+	    <p>
+		<label>
+            		<select class="form-control" id="Papers-dropdown">
+                    	    <option value=50>50 Papers</option>
+                    	    <option value=100>100 Papers</option>
+                    	    <option value=150>150 Papers</option>
+                    	    <option value=200>200 Papers</option>
+                	</select>
+			Number of papers to search	
+		</label>
+            </p>
+
         </div>
 </div>
 
@@ -90,11 +113,12 @@
                 <p>
                     <b>Related keywords:</b>
                     <span id="related-keywords"></span>
+		    <p align="right"><span onclick = "next(1)">next</span> <span onclick = "next(0)">prev</span></p>
                 </p>
                 <p>
                    Showing <b id="no-of-results"></b> results for <b id="search-query"></b>
                 </p>
-                <ol id="results-list"></ol>
+                <ol start="1" id="results-list"></ol>
             </div>
         </div>
 </div>
@@ -137,6 +161,14 @@ var advanced_search_fields_regexp = new RegExp("tak|abs|aut|aus|aff|pdt|key|" +
 /*
  * Return a Date object from a string
  */
+
+//papers per page and current begining of page for moving between papers.
+var papersPerPage = 0;
+var currentIndex = 0;
+
+//the results put here so it is in scope for recalling show papers from the next function.
+var saved;
+
 function parseDate(date_text) {
     var res = date_regex.exec(date_text);
 
@@ -364,6 +396,7 @@ function rankResults(results, filtering) {
                 for (var i=0; i<temp.debug.length; i++) {
                     console.log("DEBUG: " + temp.debug[i]);
                 }
+		saved = temp;
                 showSearchResults(temp);
             }
         }
@@ -450,8 +483,15 @@ function showSearchResults(results) {
         }
     }
 
+    papersPerPage = parseInt(document.getElementById("perPage").value);
+
+    console.log(currentIndex);
+    console.log(papersPerPage);
+
+    document.getElementById("results-list").setAttribute("start", currentIndex + 1);
+
     // Show the papers
-    for (var i=0; i<results.papers.length; i++) {
+    for (var i=currentIndex; i<results.papers.length && i<currentIndex + papersPerPage; i++) {
 
         var keywords_matches = 0;
 
@@ -523,6 +563,23 @@ function showSearchResults(results) {
         $li.append($link, "<br />", $authors, $date, $p, $p2);
         $("#results-list").append($li);
     }
+}
+
+function next(status){
+    if(status == 0){
+	currentIndex -= papersPerPage;
+	if(currentIndex < 0){
+	    currentIndex = 0;
+	}
+    }else{
+	if(currentIndex + 2*papersPerPage <= saved.papers.length){
+	     currentIndex += papersPerPage;	
+	}else{
+	     currentIndex = saved.papers.length - papersPerPage;
+	}
+    }
+
+    showSearchResults(saved);
 }
 
 /*
