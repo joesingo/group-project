@@ -46,7 +46,7 @@
                     	    <option value=15>15</option>
                     	    <option value=20>20</option>
                 	</select>
-			papers per page	
+			papers per page
 		</label>
 	     </p>
         </form>
@@ -98,7 +98,7 @@
                     	    <option value=150>150 Papers</option>
                     	    <option value=200>200 Papers</option>
                 	</select>
-			Number of papers to search	
+			Number of papers to search
 		</label>
             </p>
 
@@ -396,7 +396,7 @@ function rankResults(results, filtering) {
                 for (var i=0; i<temp.debug.length; i++) {
                     console.log("DEBUG: " + temp.debug[i]);
                 }
-		saved = temp;
+		        saved = temp;
                 showSearchResults(temp);
             }
         }
@@ -485,9 +485,6 @@ function showSearchResults(results) {
 
     papersPerPage = parseInt(document.getElementById("perPage").value);
 
-    console.log(currentIndex);
-    console.log(papersPerPage);
-
     document.getElementById("results-list").setAttribute("start", currentIndex + 1);
 
     // Show the papers
@@ -573,7 +570,7 @@ function next(status){
 	}
     }else{
 	if(currentIndex + 2*papersPerPage <= saved.papers.length){
-	     currentIndex += papersPerPage;	
+	     currentIndex += papersPerPage;
 	}else{
 	     currentIndex = saved.papers.length - papersPerPage;
 	}
