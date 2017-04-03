@@ -37,7 +37,8 @@
             if ($this->get_iteration_no() == 1) {
 
                 // Find common keywords from the first search
-                $new_results->related_keywords = find_common_keywords($new_results);
+                $new_results->related_keywords = find_common_keywords($new_results,
+                                                                      $new_results->query);
 
                 $_SESSION["prev_results"] = $new_results;
             }
@@ -95,8 +96,28 @@
      * Return an array of top most common keywords from the search results
      * provided
      */
-    function find_common_keywords($results) {
-        $k = array("maths", "computer science", "physics");
+    function find_common_keywords($results, $original_query) {
+        $I=0;
+        $key_word_list = array();
+
+        foreach ($results->papers as $paper) {
+
+            foreach($paper->keywords as $item){
+                $itemm = strtolower($item);
+
+                if (array_key_exists($itemm, $key_word_list)) {
+                    $key_word_list[$itemm] = $key_word_list[$itemm] + 1;
+                }
+                else if ($itemm != strtolower($original_query)) {
+                    $key_word_list[$itemm] = 1;
+                }
+            }
+        }
+
+        arsort($key_word_list);
+
+        $k = array_keys($key_word_list);
+        $k = array_slice($k, 0, 10);
         return $k;
     }
 
