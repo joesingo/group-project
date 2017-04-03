@@ -61,7 +61,6 @@
                     <option value="relevance">Relevance</option>
                     <option value="date_asc">Date ascending</option>
                     <option value="date_desc">Date descending</option>
-                    <option value="ref_count">Reference count</option>
                 </select>
             </p>
 
@@ -140,13 +139,6 @@ var API_FIELDS = {
     "keywords": "authkeywords"
 };
 
-// The fields that can be used in the API query to specify sort order
-var SORT_FIELDS = {
-    "relevance": "+relevancy",
-    "date_asc": "+coverDate",
-    "date_desc": "-coverDate"
-}
-
 // The maximum number of characters to show in the abstract before truncating
 var MAX_ABSTRACT_LENGTH = 500;
 
@@ -224,20 +216,16 @@ function search(query, iterative_search) {
         "httpAccept": "application/json",
         "field": Object.values(API_FIELDS).join(","),
         "count": 50,
+        "sort": "+relevancy",
         "query": (advanced_search && !iterative_search ? query : buildQuery(query))
     };
 
     // Store the original search term and the filtering applied so that we can
     // pass it to rankResults()
     var filtering = {
-        "search_term": query
+        "search_term": query,
+        "sort": $("#sort-dropdown").val()
     };
-
-    filtering["sort"] = $("#sort-dropdown").val();
-
-    if (filtering["sort"] in SORT_FIELDS) {
-        query_data["sort"] = SORT_FIELDS[filtering["sort"]];
-    }
 
     // Remove error messages from date inputs if there was an error previously
     $("#date-filter .help-block").text("");
@@ -380,6 +368,7 @@ function rankResults(results, filtering) {
         "method": "POST",
         "data": {
             "r":  JSON.stringify(formatted_results),
+            "sort": filtering["sort"]
         },
 
         "error": function() {

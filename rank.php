@@ -121,33 +121,55 @@
         return $k;
     }
 
+    // Constants for different sorting criteria
+    // NOTE: These need to match the values in sort dropdown in HTML file
+    define("RELEVANCE", "relevance");
+    define("DATE_ASC", "date_asc");
+    define("DATE_DESC", "date_desc");
+
     $r = $_REQUEST["r"];
     $iter = new IterativeSearchSession();
     $iter_number = $iter->get_iteration_no();
 
     $data = json_decode($r);
 
-    for($i = 0; $i<count($data->papers); $i++){
+    for ($i = 0; $i<count($data->papers); $i++) {
         $data->papers[$i]->score = 0;
     }
 
-    for($i = 0; $i<count($data->papers); $i++){
-        $year = (int)substr($data->papers[$i]->published_date,6,4);
-        $month = (int)substr($data->papers[$i]->published_date,3,2);
+    // NOTE: This relies on the user not changing the sort order in between
+    // iterative searches!
+    $sort = $_REQUEST["sort"];
 
-        $month_now = (int)date('n');
-        $year_now = (int)date('Y');
+    if ($sort == DATE_ASC || $sort == DATE_DESC) {
+        // Sort by date
 
-        $age_yr = $year_now - $year;
-        $age_mth = $month_now - $month;
+        for ($i = 0; $i<count($data->papers); $i++) {
+            $year = (int)substr($data->papers[$i]->published_date,6,4);
+            $month = (int)substr($data->papers[$i]->published_date,3,2);
 
-        $inc = 500 - ($age_yr*12 + $age_mth);
+            $month_now = (int)date('n');
+            $year_now = (int)date('Y');
 
-        if($inc > 0){
-            $data->papers[$i]->score += $inc;
+            $age_yr = $year_now - $year;
+            $age_mth = $month_now - $month;
+
+            $total_age = $age_yr*12 + $age_mth;
+
+            // If sorting by date descending then smallest age is best, so score
+            // should be -$total_age
+            $sign = ($sort == DATE_DESC ? -1 : 1);
+            $data->papers[$i]->score = $sign * $total_age;
         }
     }
 
+    else if ($sort == RELEVANCE) {
+        // Results from API are returned sorted by relevance, so first paper
+        // gets score n, seconds gets n-1, third gets n-2 and so on
+        for ($i = 0; $i<count($data->papers); $i++) {
+            $data->papers[$i]->score = count($data->papers) - $i;
+        }
+    }
 
     // Adjust scores in $data->papers based on iteration number. $multiplier
     // is always <= 1 and > 0, and decreases as $iter_number increases
