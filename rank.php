@@ -11,6 +11,11 @@
     class IterativeSearchSession {
 
         function __construct() {
+
+            // Change the session path to avoid permission errors that seem to
+            // occasionally happen on users server
+            session_save_path(".");
+
             session_start();
 
             if (!isset($_SESSION["prev_searches"])) {
