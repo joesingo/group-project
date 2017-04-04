@@ -188,7 +188,7 @@
     $iter->sort_results();
 
     $max_iterations = 10;
-    $min_papers = 60;  // TODO: Get this from client instead of hardcoding it
+    $min_papers = $_REQUEST["min_papers"];
 
     $related_keywords = $iter->get_related_keywords();
 

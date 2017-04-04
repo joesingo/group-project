@@ -38,17 +38,30 @@
                 You can use the search language described
                 <a href="http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm">here</a>
             </p>
-	    <p>
-		<label>
-            		<select class="form-control" id="perPage">
-                    	    <option value=5>5</option>
-                    	    <option value=10>10</option>
-                    	    <option value=15>15</option>
-                    	    <option value=20>20</option>
-                	</select>
-			papers per page
-		</label>
-	     </p>
+
+            <p>
+                <label>
+                    Find
+                    <select class="form-control" id="Papers-dropdown">
+                        <option value=50>50</option>
+                        <option value=100>100</option>
+                        <option value=150>150</option>
+                        <option value=200>200</option>
+                    </select>
+                    papers
+                </label>
+                and
+                <label>
+                    show
+                    <select class="form-control" id="perPage">
+                        <option value=5>5</option>
+                        <option value=10>10</option>
+                        <option value=15>15</option>
+                        <option value=20>20</option>
+                    </select>
+                    papers per page
+                </label>
+            </p>
         </form>
 </div>
 
@@ -89,18 +102,6 @@
                     <input type="text" class="form-control" maxlength="50"/>
                 </span>
             </p>
-	    <p>
-		<label>
-            		<select class="form-control" id="Papers-dropdown">
-                    	    <option value=50>50 Papers</option>
-                    	    <option value=100>100 Papers</option>
-                    	    <option value=150>150 Papers</option>
-                    	    <option value=200>200 Papers</option>
-                	</select>
-			Number of papers to search
-		</label>
-            </p>
-
         </div>
 </div>
 
@@ -210,12 +211,13 @@ function search(query, iterative_search) {
     }
 
     var advanced_search = $("#advanced-search-checkbox").is(":checked");
+    var min_papers = $("#Papers-dropdown").val();
 
     var query_data = {
         "apiKey": API_KEY,
         "httpAccept": "application/json",
         "field": Object.values(API_FIELDS).join(","),
-        "count": 50,
+        "count": min_papers,
         "sort": "+relevancy",
         "query": (advanced_search && !iterative_search ? query : buildQuery(query))
     };
@@ -224,7 +226,8 @@ function search(query, iterative_search) {
     // pass it to rankResults()
     var filtering = {
         "search_term": query,
-        "sort": $("#sort-dropdown").val()
+        "sort": $("#sort-dropdown").val(),
+        "min_papers": min_papers
     };
 
     // Remove error messages from date inputs if there was an error previously
@@ -368,7 +371,8 @@ function rankResults(results, filtering) {
         "method": "POST",
         "data": {
             "r":  JSON.stringify(formatted_results),
-            "sort": filtering["sort"]
+            "sort": filtering["sort"],
+            "min_papers": filtering["min_papers"]
         },
 
         "error": function() {
