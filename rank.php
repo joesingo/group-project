@@ -138,8 +138,10 @@
 
     $data = json_decode($r);
 
-    for ($i = 0; $i<count($data->papers); $i++) {
-        $data->papers[$i]->score = 0;
+    foreach ($data->papers as $api => $papers) {
+        foreach ($papers as $paper) {
+            $paper->score = 0;
+        }
     }
 
     // NOTE: This relies on the user not changing the sort order in between
@@ -149,32 +151,47 @@
     if ($sort == DATE_ASC || $sort == DATE_DESC) {
         // Sort by date
 
-        for ($i = 0; $i<count($data->papers); $i++) {
-            $year = (int)substr($data->papers[$i]->published_date,6,4);
-            $month = (int)substr($data->papers[$i]->published_date,3,2);
+        // Go through the papers from each API
+        foreach ($data->papers as $api => $papers) {
 
-            $month_now = (int)date('n');
-            $year_now = (int)date('Y');
+            foreach ($papers as $paper) {
+                $year = (int)substr($paper->published_date,6,4);
+                $month = (int)substr($paper->published_date,3,2);
 
-            $age_yr = $year_now - $year;
-            $age_mth = $month_now - $month;
+                $month_now = (int)date('n');
+                $year_now = (int)date('Y');
 
-            $total_age = $age_yr*12 + $age_mth;
+                $age_yr = $year_now - $year;
+                $age_mth = $month_now - $month;
 
-            // If sorting by date descending then smallest age is best, so score
-            // should be -$total_age
-            $sign = ($sort == DATE_DESC ? -1 : 1);
-            $data->papers[$i]->score = $sign * $total_age;
+                $total_age = $age_yr*12 + $age_mth;
+
+                // If sorting by date descending then smallest age is best, so score
+                // should be -$total_age
+                $sign = ($sort == DATE_DESC ? -1 : 1);
+                $paper->score = $sign * $total_age;
+            }
         }
     }
 
     else if ($sort == RELEVANCE) {
-        // Results from API are returned sorted by relevance, so first paper
-        // gets score n, seconds gets n-1, third gets n-2 and so on
-        for ($i = 0; $i<count($data->papers); $i++) {
-            $data->papers[$i]->score = count($data->papers) - $i;
+        foreach ($data->papers as $api => $papers) {
+            // Results from API are returned sorted by relevance, so first paper
+            // gets score 0, seconds gets -1, third gets -2 and so on.
+            foreach ($papers as $i => $paper) {
+                $paper->score = -$i;
+            }
         }
     }
+
+    // Now that papers from different APIs have been scored they can be combined
+    // into a single array
+    $all_papers = array();
+    foreach ($data->papers as $api => $papers) {
+        $all_papers = array_merge($all_papers, $papers);
+    }
+
+    $data->papers = $all_papers;
 
     // Adjust scores in $data->papers based on iteration number. $multiplier
     // is always <= 1 and > 0, and decreases as $iter_number increases

@@ -128,12 +128,23 @@
 <script type="text/javascript">
 
 const API_KEY = "ba079b238ccdab296232e4ce8b9f5b6e";
-const API_URL = "https://api.elsevier.com/content/search/scidir";
+const SCI_DIR_API_URL = "https://api.elsevier.com/content/search/scidir";
+const SCO_API_URL = "https://api.elsevier.com/content/search/scopus";
 
-var API_FIELDS = {
+var SCI_DIR_API_FIELDS = {
     "title": "dc:title",
     "abstract": "dc:description",
     "authors": "authors",
+    "published_date": "prism:coverDate",
+    "url": "prism:url",
+    "total_results": "opensearch:totalResults",
+    "keywords": "authkeywords"
+};
+
+var SCO_API_FIELDS = {
+    "title": "dc:title",
+    "abstract": "dc:description",
+    "authors": "author",
     "published_date": "prism:coverDate",
     "url": "prism:url",
     "total_results": "opensearch:totalResults",
@@ -213,11 +224,14 @@ function search(query, iterative_search) {
     var advanced_search = $("#advanced-search-checkbox").is(":checked");
     var min_papers = $("#Papers-dropdown").val();
 
+    // Query data that is common to both Science Direct and Scopus
     var query_data = {
         "apiKey": API_KEY,
         "httpAccept": "application/json",
-        "field": Object.values(API_FIELDS).join(","),
-        "count": min_papers,
+
+        // TODO: Check if > 25 works on page load, and use min_papers instead if so
+        "count": 25, //min_papers,
+
         "sort": "+relevancy",
         "query": (advanced_search && !iterative_search ? query : buildQuery(query))
     };
@@ -253,7 +267,7 @@ function search(query, iterative_search) {
         }
 
         else {
-            // Add date range to data to be sent to API. Unfortunately the
+            // Add date range to data to be sent to APIs. Unfortunately the
             // lowest granularity for date filtering is years
             query_data["date"] = start_date.getFullYear() + "-" + end_date.getFullYear();
 
@@ -273,95 +287,143 @@ function search(query, iterative_search) {
         $("#search-area input").blur();
     }
 
-    $.ajax(API_URL, {
-        "data": query_data,
+    // Create seperate query data for each API since the fields used could be
+    // different
+    var sci_dir_query_data = JSON.parse(JSON.stringify(query_data));
+    sci_dir_query_data.field = Object.values(SCI_DIR_API_FIELDS).join(",");
+    var scopus_query_data = JSON.parse(JSON.stringify(query_data));
+    scopus_query_data.field = Object.values(SCO_API_FIELDS).join(",");
 
-        "error": function() {
-            $("#message").text("Unexpected error querying ScienceDirect :(");
-        },
+    $.when(
+        $.ajax(SCI_DIR_API_URL, {
+            "data": sci_dir_query_data,
 
-        "success": function(data, textStatus) {
-            rankResults(data, filtering);
-        }
+            "error": function() {
+                $("#message").text("Unexpected error querying ScienceDirect :(");
+            }
+        }),
+        $.ajax(SCO_API_URL, {
+            "data": scopus_query_data,
+
+            "error": function() {
+                $("#message").text("Unexpected error querying Scopus :(");
+            }
+        })
+    ).then(function (sci_dir_response, scopus_response) {
+        var res = {
+            "science_direct": sci_dir_response[0]["search-results"]["entry"],
+            "scopus": scopus_response[0]["search-results"]["entry"]
+        };
+
+        rankResults(res, filtering);
     });
 }
 
 /*
- * Format the search results from ScienceDirect and send to our server to be
- * ranked, and call showSearchResults() when it is complete
+ * Format the merged search results from ScienceDirect and Scopus and send
+ * them to our server to be ranked, and call showSearchResults() when it is
+ * complete. results is an object with a key for each API.
  */
 function rankResults(results, filtering) {
 
     var formatted_results = {
         "query": filtering["search_term"],
-        "papers": []
+        "papers": {}
     };
 
-    if (results["search-results"][API_FIELDS.total_results] > 0) {
-        var papers = results["search-results"]["entry"];
+    for (var api_name in results) {
+        var papers = results[api_name];
 
-        var start_date = filtering.start_date || null;
-        var end_date = filtering.end_date || null;
+        if (papers.length > 0) {
 
-        for (var i=0; i<papers.length; i++) {
+            formatted_results.papers[api_name] = [];
 
-            // The link in the search results is an API link - replace the start
-            // of it to get the actual link to the paper
-            var link = papers[i][API_FIELDS.url];
-            link = link.replace("https://api.elsevier.com/content/",
-                                "https://www.sciencedirect.com/science/");
+            var start_date = filtering.start_date || null;
+            var end_date = filtering.end_date || null;
 
-            // Put the author list into a single array
-            var authors = [];
+            for (var i=0; i<papers.length; i++) {
 
-            // Check that the authors list is present
-            if (API_FIELDS.authors in papers[i] && papers[i][API_FIELDS.authors] &&
-                "author" in papers[i][API_FIELDS.authors]) {
+                // The link in the search results is an API link - replace the start
+                // of it to get the actual link to the paper
+                var link = papers[i][SCI_DIR_API_FIELDS.url];
 
-                var authors_list = papers[i].authors.author;
-
-                for (var j=0; j<authors_list.length; j++) {
-                    authors.push(authors_list[j]["given-name"] + " " +
-                                 authors_list[j]["surname"]);
+                if (api_name == "science_direct") {
+                    link = link.replace("https://api.elsevier.com/content/",
+                                        "https://www.sciencedirect.com/science/");
                 }
-            }
-            else {
-                authors = ["N/A"];
-            }
-
-            var keywords = [];
-            if (papers[i][API_FIELDS.keywords]) {
-                keywords = papers[i][API_FIELDS.keywords].split(" | ");
-            }
-            else {
-                keywords = [];
-            }
-
-            var p = {
-                "title": papers[i][API_FIELDS.title],
-                "link": link,
-                "authors": authors,
-                "published_date": papers[i][API_FIELDS.published_date][0]["$"],
-                "abstract": papers[i][API_FIELDS.abstract],
-                "keywords": keywords
-            };
-
-            // Convert published date from YYYY-MM-DD to DD-MM-YYYY format
-            var d = p.published_date;
-            p.published_date = d.substr(8, 2) + "-" + d.substr(5,2) + "-" + d.substr(0, 4);
-
-            // If start date and end date filtering is applied then check the
-            // date is in the correct range (since API only filters by year)
-            if (start_date !== null && end_date !== null) {
-                var pub_date = parseDate(p.published_date);
-
-                // Skip if out of range
-                if (pub_date < start_date || pub_date > end_date) {
-                    continue;
+                else if (api_name == "scopus") {
+                    link = link.replace("https://api.elsevier.com/content/abstract/scopus_id/",
+                                        "https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=");
                 }
-            }
 
-            formatted_results.papers.push(p);
+                // Put the author list into a single array
+                var authors = [];
+
+                // Check that the authors list is present
+                if (SCI_DIR_API_FIELDS.authors in papers[i] && papers[i][SCI_DIR_API_FIELDS.authors] &&
+                    "author" in papers[i][SCI_DIR_API_FIELDS.authors]) {
+
+                    var authors_list = papers[i].authors.author;
+
+                    for (var j=0; j<authors_list.length; j++) {
+                        authors.push(authors_list[j]["given-name"] + " " +
+                                     authors_list[j]["surname"]);
+                    }
+                }
+                else if (papers[i][SCO_API_FIELDS.authors]) {
+                    var authors_list = papers[i][SCO_API_FIELDS.authors];
+
+                    for (var j=0; j<authors_list.length; j++) {
+                        authors.push(authors_list[j]["given-name"] + " " +
+                                     authors_list[j]["surname"]);
+                    }
+                }
+                else {
+                    authors = ["N/A"];
+                }
+
+                var keywords = [];
+                if (papers[i][SCI_DIR_API_FIELDS.keywords]) {
+                    keywords = papers[i][SCI_DIR_API_FIELDS.keywords].split(" | ");
+                }
+                else {
+                    keywords = [];
+                }
+
+                var date = "";
+                if (api_name == "science_direct") {
+                    date = papers[i][SCI_DIR_API_FIELDS.published_date][0]["$"];
+                }
+                else if (api_name == "scopus") {
+                    date = papers[i][SCO_API_FIELDS.published_date];
+                }
+
+                var p = {
+                    "title": papers[i][SCI_DIR_API_FIELDS.title],
+                    "link": link,
+                    "authors": authors,
+                    "published_date": date,
+                    "abstract": papers[i][SCI_DIR_API_FIELDS.abstract],
+                    "keywords": keywords
+                };
+
+                // Convert published date from YYYY-MM-DD to DD-MM-YYYY format
+                var d = p.published_date;
+                p.published_date = d.substr(8, 2) + "-" + d.substr(5,2) + "-" + d.substr(0, 4);
+
+                // If start date and end date filtering is applied then check the
+                // date is in the correct range (since API only filters by year)
+                if (start_date !== null && end_date !== null) {
+                    var pub_date = parseDate(p.published_date);
+
+                    // Skip if out of range
+                    if (pub_date < start_date || pub_date > end_date) {
+                        continue;
+                    }
+                }
+
+                formatted_results.papers[api_name].push(p);
+            }
         }
     }
 
