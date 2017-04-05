@@ -169,6 +169,9 @@ var currentIndex = 0;
 // The results put here so it is in scope for recalling show papers from the next function.
 var saved;
 
+var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select," +
+                       ".Searching input, .Searching select");
+
 /*
  * Return a Date object from a string
  */
@@ -216,6 +219,7 @@ function buildQuery(search_terms) {
  * completes
  */
 function search(query, iterative_search) {
+    query = query.trim();
     if (!query) {
         return false;
     }
@@ -293,12 +297,15 @@ function search(query, iterative_search) {
     var scopus_query_data = JSON.parse(JSON.stringify(query_data));
     scopus_query_data.field = Object.values(SCO_API_FIELDS).join(",");
 
+    $form_elements.prop("disabled", true);
+
     $.when(
         $.ajax(SCI_DIR_API_URL, {
             "data": sci_dir_query_data,
 
             "error": function() {
                 $("#message").text("Unexpected error querying ScienceDirect :(");
+                $form_elements.prop("disabled", false);
             }
         }),
         $.ajax(SCO_API_URL, {
@@ -306,6 +313,7 @@ function search(query, iterative_search) {
 
             "error": function() {
                 $("#message").text("Unexpected error querying Scopus :(");
+                $form_elements.prop("disabled", false);
             }
         })
     ).then(function (sci_dir_response, scopus_response) {
@@ -437,7 +445,8 @@ function rankResults(results, filtering) {
         },
 
         "error": function() {
-            $("#message").text("Unexpected error :(");
+            $("#message").text("Unexpected error ranking results:(");
+            $form_elements.prop("disabled", false);
         },
 
         "success": function(data, textStatus) {
@@ -450,7 +459,7 @@ function rankResults(results, filtering) {
                 for (var i=0; i<temp.debug.length; i++) {
                     console.log("DEBUG: " + temp.debug[i]);
                 }
-		        saved = temp;
+                saved = temp;
                 showSearchResults(temp);
             }
         }
@@ -502,6 +511,7 @@ function showSearchResults(results) {
 
     $("#search-results").children().show();
     $("#message").hide();
+    $form_elements.prop("disabled", false);
 
     // Show the related keywords
     for (let i=0; i<results.related_keywords.length; i++) {
