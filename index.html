@@ -162,17 +162,16 @@ var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 var advanced_search_fields_regexp = new RegExp("tak|abs|aut|aus|aff|pdt|key|" +
                                                "ref|ttl|src|sub|vis|pag", "gi")
 
-/*
- * Return a Date object from a string
- */
-
-//papers per page and current begining of page for moving between papers.
+// Papers per page and current begining of page for moving between papers.
 var papersPerPage = 0;
 var currentIndex = 0;
 
-//the results put here so it is in scope for recalling show papers from the next function.
+// The results put here so it is in scope for recalling show papers from the next function.
 var saved;
 
+/*
+ * Return a Date object from a string
+ */
 function parseDate(date_text) {
     var res = date_regex.exec(date_text);
 
@@ -618,17 +617,19 @@ function showSearchResults(results) {
 }
 
 function next(status){
-    if(status == 0){
-	currentIndex -= papersPerPage;
-	if(currentIndex < 0){
-	    currentIndex = 0;
-	}
-    }else{
-	if(currentIndex + 2*papersPerPage <= saved.papers.length){
-	     currentIndex += papersPerPage;
-	}else{
-	     currentIndex = saved.papers.length - papersPerPage;
-	}
+    if (status == 0) {
+        currentIndex -= papersPerPage;
+        if (currentIndex < 0) {
+	        currentIndex = 0;
+	    }
+    }
+    else {
+        if (currentIndex + 2*papersPerPage <= saved.papers.length) {
+            currentIndex += papersPerPage;
+	    }
+        else {
+	       currentIndex = saved.papers.length - papersPerPage;
+	   }
     }
 
     showSearchResults(saved);
