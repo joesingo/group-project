@@ -86,3 +86,7 @@ a.show-more-link {
     font-size: 1em;
     cursor: pointer;
 }
+
+#page-navigation {
+    text-align: center;
+}

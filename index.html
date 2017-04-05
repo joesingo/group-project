@@ -113,12 +113,18 @@
                 <p>
                     <b>Related keywords:</b>
                     <span id="related-keywords"></span>
-		    <p align="right"><span onclick = "next(1)">next</span> <span onclick = "next(0)">prev</span></p>
                 </p>
                 <p>
                    Showing <b id="no-of-results"></b> results for <b id="search-query"></b>
                 </p>
                 <ol start="1" id="results-list"></ol>
+                <p id="page-navigation">
+                    Showing page <b id="current-page"></b> of <b id="total-pages"></b>
+                    <br />
+                    <a href="#" class="prev" onclick="next(0)">Previous</a href="#">
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#" class="next" onclick="next(1)">Next</a href="#">
+                </p>
             </div>
         </div>
 </div>
@@ -224,6 +230,7 @@ function search(query, iterative_search) {
         return false;
     }
 
+    currentIndex = 0;
     var advanced_search = $("#advanced-search-checkbox").is(":checked");
     var min_papers = $("#Papers-dropdown").val();
 
@@ -551,6 +558,20 @@ function showSearchResults(results) {
 
     document.getElementById("results-list").setAttribute("start", currentIndex + 1);
 
+    var current_page = 1 + currentIndex / papersPerPage;
+    var total_pages = Math.ceil(saved.papers.length / papersPerPage);
+    $("#current-page").html(current_page);
+    $("#total-pages").html(total_pages);
+
+    // Hide prev/next link if on first/last page
+    $("#page-navigation a").prop("hidden", false);
+    if (current_page == 1) {
+        $("#page-navigation a.prev").prop("hidden", true);
+    }
+    else if (current_page == total_pages) {
+        $("#page-navigation a.next").prop("hidden", true);
+    }
+
     // Show the papers
     for (var i=currentIndex; i<results.papers.length && i<currentIndex + papersPerPage; i++) {
 
@@ -630,16 +651,16 @@ function next(status){
     if (status == 0) {
         currentIndex -= papersPerPage;
         if (currentIndex < 0) {
-	        currentIndex = 0;
-	    }
+            currentIndex = 0;
+        }
     }
     else {
         if (currentIndex + 2*papersPerPage <= saved.papers.length) {
             currentIndex += papersPerPage;
-	    }
+        }
         else {
-	       currentIndex = saved.papers.length - papersPerPage;
-	   }
+            currentIndex = saved.papers.length - papersPerPage;
+       }
     }
 
     showSearchResults(saved);
