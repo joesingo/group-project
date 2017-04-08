@@ -227,7 +227,12 @@ function buildQuery(search_terms) {
 function callAPI(url, query, api_name, progress, callback) {
     $.ajax(url, {"data": query})
         .done(function(data, textStatus, jqXHR) {
-            progress.results[api_name] = data["search-results"]["entry"];
+            if (data["search-results"][SCI_DIR_API_FIELDS.total_results] > 0) {
+                progress.results[api_name] = data["search-results"]["entry"];
+            }
+            else {
+                progress.results[api_name] = [];
+            }
         })
 
         .fail(function(jqXHR, textStatus, errorThrown) {
@@ -363,11 +368,15 @@ function rankResults(results, filtering) {
         "papers": {}
     };
 
+    // Keep track of whether any papers were returned to avoid sending 0 papers
+    // to be ranked
+    var paper_found = false;
+
     for (var api_name in results) {
         var papers = results[api_name];
 
         if (papers.length > 0) {
-
+            paper_found = true;
             formatted_results.papers[api_name] = [];
 
             var start_date = filtering.start_date || null;
@@ -459,36 +468,43 @@ function rankResults(results, filtering) {
         }
     }
 
-    // Send formatted_results to our server via AJAX to do the ranking and
-    // get related keywords, and call showSearchResults() when finished
-    $.ajax("rank.php", {
-        "method": "POST",
-        "data": {
-            "r":  JSON.stringify(formatted_results),
-            "sort": filtering["sort"],
-            "min_papers": filtering["min_papers"]
-        },
+    if (paper_found) {
+        // Send formatted_results to our server via AJAX to do the ranking and
+        // get related keywords, and call showSearchResults() when finished
+        $.ajax("rank.php", {
+            "method": "POST",
+            "data": {
+                "r":  JSON.stringify(formatted_results),
+                "sort": filtering["sort"],
+                "min_papers": filtering["min_papers"]
+            },
 
-        "error": function() {
-            $("#message").text("Unexpected error ranking results:(");
-            $form_elements.prop("disabled", false);
-        },
+            "error": function() {
+                $("#message").text("Unexpected error ranking results:(");
+                $form_elements.prop("disabled", false);
+            },
 
-        "success": function(data, textStatus) {
-            var temp = JSON.parse(data);
+            "success": function(data, textStatus) {
+                var temp = JSON.parse(data);
 
-            if ("iterative_search" in temp) {
-                search(temp["iterative_search"], true);
-            }
-            else {
-                for (var i=0; i<temp.debug.length; i++) {
-                    console.log("DEBUG: " + temp.debug[i]);
+                if ("iterative_search" in temp) {
+                    search(temp["iterative_search"], true);
                 }
-                saved = temp;
-                showSearchResults(temp);
+                else {
+                    for (var i=0; i<temp.debug.length; i++) {
+                        console.log("DEBUG: " + temp.debug[i]);
+                    }
+                    saved = temp;
+                    showSearchResults(temp);
+                }
             }
-        }
-    });
+        });
+    }
+    else {
+        formatted_results.papers = [];
+        formatted_results.related_keywords = [];
+        showSearchResults(formatted_results);
+    }
 }
 
 /*
@@ -533,10 +549,18 @@ function showSearchResults(results) {
     $("#search-query").text(results.query);
     $("#results-list").text("");
     $("#related-keywords").text("");
+    $("#related-keywords").parent().show();
 
     $("#search-results").children().show();
     $("#message").hide();
     $form_elements.prop("disabled", false);
+    $("#page-navigation").show();
+
+    if (results.papers.length == 0) {
+        $("#page-navigation").hide();
+        $("#related-keywords").parent().hide();
+        return;
+    }
 
     // Show the related keywords
     for (let i=0; i<results.related_keywords.length; i++) {
