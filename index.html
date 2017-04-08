@@ -220,9 +220,32 @@ function buildQuery(search_terms) {
 }
 
 /*
- * Send an AJAX request to search ScienceDirect with the search query provided
- * and use the filters selected on the page. Call rankResults() when the request
- * completes
+ * Send an AJAX request to the given URL with the given query data. progress
+ * stores the results, number failed API calls and total APIs, and callback
+ * is called when all APIs have finished
+ */
+function callAPI(url, query, api_name, progress, callback) {
+    $.ajax(url, {"data": query})
+        .done(function(data, textStatus, jqXHR) {
+            progress.results[api_name] = data["search-results"]["entry"];
+        })
+
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            progress.errors += 1;
+        })
+
+        .always(function() {
+            num_finished = Object.keys(progress.results).length + progress.errors;
+            if (num_finished == progress.num_apis) {
+                callback();
+            }
+        });
+}
+
+/*
+ * Send an AJAX request to search ScienceDirect and Scopus with the search query
+ * provided and use the filters selected on the page. Call rankResults() when
+ * the requests are completed
  */
 function search(query, iterative_search) {
     query = query.trim();
@@ -238,10 +261,7 @@ function search(query, iterative_search) {
     var query_data = {
         "apiKey": API_KEY,
         "httpAccept": "application/json",
-
-        // TODO: Check if > 25 works on page load, and use min_papers instead if so
-        "count": 25, //min_papers,
-
+        "count": min_papers,
         "sort": "+relevancy",
         "query": (advanced_search && !iterative_search ? query : buildQuery(query))
     };
@@ -306,31 +326,29 @@ function search(query, iterative_search) {
 
     $form_elements.prop("disabled", true);
 
-    $.when(
-        $.ajax(SCI_DIR_API_URL, {
-            "data": sci_dir_query_data,
+    // Keep track of search progress, since API calls are asynchronous and there
+    // is no way of knowing which order the APIs will return
+    var search_progress = {
+        "num_apis": 2,
+        "errors": 0, // The number of failed API calls
+        "results": {}
+    };
 
-            "error": function() {
-                $("#message").text("Unexpected error querying ScienceDirect :(");
-                $form_elements.prop("disabled", false);
-            }
-        }),
-        $.ajax(SCO_API_URL, {
-            "data": scopus_query_data,
+    // Callback function for when all APIs have finished
+    var callback = function() {
+        if (search_progress.errors == search_progress.num_apis) {
+            $("#message").html("Error querying search APIs &#9785; Please try again later");
+            $form_elements.prop("disabled", false);
+        }
+        else {
+            rankResults(search_progress.results, filtering);
+        }
+    }
 
-            "error": function() {
-                $("#message").text("Unexpected error querying Scopus :(");
-                $form_elements.prop("disabled", false);
-            }
-        })
-    ).then(function (sci_dir_response, scopus_response) {
-        var res = {
-            "science_direct": sci_dir_response[0]["search-results"]["entry"],
-            "scopus": scopus_response[0]["search-results"]["entry"]
-        };
+    callAPI(SCI_DIR_API_URL, sci_dir_query_data, "science_direct",
+            search_progress, callback);
 
-        rankResults(res, filtering);
-    });
+    callAPI(SCO_API_URL, scopus_query_data, "scopus", search_progress, callback);
 }
 
 /*
