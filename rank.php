@@ -10,7 +10,7 @@
      */
     class IterativeSearchSession {
 
-        function __construct() {
+        function __construct($initial_search) {
 
             // Change the session path to avoid permission errors that seem to
             // occasionally happen on users server
@@ -18,7 +18,7 @@
 
             session_start();
 
-            if (!isset($_SESSION["prev_searches"])) {
+            if (!isset($_SESSION["prev_searches"]) || $initial_search) {
                 $_SESSION["prev_searches"] = array();
                 $_SESSION["prev_results"] = array();
                 $_SESSION["debug"] = array();
@@ -133,7 +133,8 @@
     define("DATE_DESC", "date_desc");
 
     $r = $_REQUEST["r"];
-    $iter = new IterativeSearchSession();
+    $initial_search = ($_REQUEST["initial_search"] == "true" ? true : false);
+    $iter = new IterativeSearchSession($initial_search);
     $iter_number = $iter->get_iteration_no();
 
     $data = json_decode($r);

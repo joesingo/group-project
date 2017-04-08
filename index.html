@@ -348,7 +348,7 @@ function search(query, iterative_search) {
             $form_elements.prop("disabled", false);
         }
         else {
-            rankResults(search_progress.results, filtering);
+            rankResults(search_progress.results, filtering, iterative_search);
         }
     }
 
@@ -363,7 +363,7 @@ function search(query, iterative_search) {
  * them to our server to be ranked, and call showSearchResults() when it is
  * complete. results is an object with a key for each API.
  */
-function rankResults(results, filtering) {
+function rankResults(results, filtering, iterative_search) {
 
     var formatted_results = {
         "query": filtering["search_term"],
@@ -473,7 +473,8 @@ function rankResults(results, filtering) {
         "data": {
             "r":  JSON.stringify(formatted_results),
             "sort": filtering["sort"],
-            "min_papers": filtering["min_papers"]
+            "min_papers": filtering["min_papers"],
+            "initial_search": !iterative_search
         },
 
         "error": function() {
