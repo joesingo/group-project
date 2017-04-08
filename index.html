@@ -167,8 +167,9 @@ var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
 // Regex to remove field names that can be used in the advanced search so we
 // can extract the actual search terms when highlighting keywords
-var advanced_search_fields_regexp = new RegExp("tak|abs|aut|aus|aff|pdt|key|" +
-                                               "ref|ttl|src|sub|vis|pag", "gi")
+var advanced_search_fields_regexp = new RegExp("(tak|abs|aut|aus|aff|pdt|key|" +
+                                               "ref|ttl|title|src|sub|vis|pag)" +
+                                               "\\(", "gi")
 
 // Papers per page and current begining of page for moving between papers.
 var papersPerPage = 0;
@@ -571,10 +572,10 @@ function showSearchResults(results) {
 
     var advanced_search = $("#advanced-search-checkbox").is(":checked");
     if (advanced_search) {
-        // 1. Remove AND, OR, NOT and brackets
-        // 2. Remove field names (e.g. abs, ttl, ref)
-        results.query = results.query.replace(/AND|OR|NOT|\(|\)/gi, "")
-                                     .replace(advanced_search_fields_regexp, "");
+        // 1. Remove field names (e.g. abs, ttl, ref)
+        // 2. Remove AND, OR, NOT and brackets
+        results.query = results.query.replace(advanced_search_fields_regexp, "")
+                                     .replace(/AND|OR|NOT|\(|\)/gi, "");
     }
 
     // Remove excessive whitespace and split by space to get keywords
