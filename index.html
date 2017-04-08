@@ -370,15 +370,11 @@ function rankResults(results, filtering) {
         "papers": {}
     };
 
-    // Keep track of whether any papers were returned to avoid sending 0 papers
-    // to be ranked
-    var paper_found = false;
-
     for (var api_name in results) {
         var papers = results[api_name];
 
         if (papers.length > 0) {
-            paper_found = true;
+
             formatted_results.papers[api_name] = [];
 
             var start_date = filtering.start_date || null;
@@ -470,43 +466,36 @@ function rankResults(results, filtering) {
         }
     }
 
-    if (paper_found) {
-        // Send formatted_results to our server via AJAX to do the ranking and
-        // get related keywords, and call showSearchResults() when finished
-        $.ajax("rank.php", {
-            "method": "POST",
-            "data": {
-                "r":  JSON.stringify(formatted_results),
-                "sort": filtering["sort"],
-                "min_papers": filtering["min_papers"]
-            },
+    // Send formatted_results to our server via AJAX to do the ranking and
+    // get related keywords, and call showSearchResults() when finished
+    $.ajax("rank.php", {
+        "method": "POST",
+        "data": {
+            "r":  JSON.stringify(formatted_results),
+            "sort": filtering["sort"],
+            "min_papers": filtering["min_papers"]
+        },
 
-            "error": function() {
-                $("#message").text("Unexpected error ranking results:(");
-                $form_elements.prop("disabled", false);
-            },
+        "error": function() {
+            $("#message").text("Unexpected error ranking results:(");
+            $form_elements.prop("disabled", false);
+        },
 
-            "success": function(data, textStatus) {
-                var temp = JSON.parse(data);
+        "success": function(data, textStatus) {
+            var temp = JSON.parse(data);
 
-                if ("iterative_search" in temp) {
-                    search(temp["iterative_search"], true);
-                }
-                else {
-                    for (var i=0; i<temp.debug.length; i++) {
-                        console.log("DEBUG: " + temp.debug[i]);
-                    }
-                    saved = temp;
-                    showSearchResults(temp);
-                }
+            if ("iterative_search" in temp) {
+                search(temp["iterative_search"], true);
             }
-        });
-    }
-    else {
-        formatted_results.papers = [];
-        formatted_results.related_keywords = [];
-        showSearchResults(formatted_results);
-    }
+            else {
+                for (var i=0; i<temp.debug.length; i++) {
+                    console.log("DEBUG: " + temp.debug[i]);
+                }
+                saved = temp;
+                showSearchResults(temp);
+            }
+        }
+    });
 }
 
 /*
