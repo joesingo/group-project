@@ -67,15 +67,12 @@ label {
 }
 
 .authors, .published-date {
+    color: gray;
     font-size: 0.9em;
 }
 
 .published-date {
     float: right;
-}
-
-.abstract-excerpt, .help-text {
-    color: gray;
 }
 
 .highlight {
