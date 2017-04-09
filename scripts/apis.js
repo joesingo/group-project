@@ -17,7 +17,11 @@ function BaseAPI(name) {
     /*
      * Convert the given search query into the format to be sent to the API server
      */
-    this.formatQuery = function(search_terms) {
+    this.formatQuery = function(search_terms, advanced_search) {
+        if (advanced_search) {
+            return search_terms;
+        }
+
         return "key(" + search_terms + ") AND abs(" + search_terms + ") AND title(" +
                search_terms + ")";
     }
@@ -28,20 +32,23 @@ function BaseAPI(name) {
      *  {
      *    "search_term": "...",
      *    "sort": "...",
-     *    "min_papers": <num papers>
+     *    "min_papers": <num papers>,
+     *    "advanced_search": <boolean>
      *  }
      * It may also have "start_date" and "end_date" (JS Date objects) if date
      * filtering is being applied
      */
     this.buildQuery = function(search_options) {
+        var search_query = this.formatQuery(search_options.search_term,
+                                            search_options.advanced_search);
         var q = {
             "apiKey": this.key,
             "httpAccept": "application/json",
-            "count": search_options["min_papers"],
+            "count": search_options.min_papers,
             // Only sort by relevance, since date sorting is done server side
             "sort": "+relevancy",
             "field": Object.values(this.api_fields).join(","),
-            "query": this.formatQuery(search_options["search_term"])
+            "query": search_query
         }
 
         if ("start_date" in search_options && "end_date" in search_options) {
@@ -65,7 +72,7 @@ function BaseAPI(name) {
      *    "keywords": ["...", ...]
      *  }
      */
-    this.formatResults = function(response, search_options) {;
+    this.formatResults = function(response, search_options) {
         if (response["search-results"][this.api_fields.total_results] == 0) {
             return [];
         }

@@ -66,15 +66,14 @@ function search(query, iterative_search) {
     }
 
     currentIndex = 0;
-    var advanced_search = $("#advanced-search-checkbox").is(":checked");
-    var min_papers = 25; //$("#Papers-dropdown").val();
 
-    // Store the original search term, filtering applied and paper count so that
-    // we can pass it to rankResults()
+    // Store the original search term, filtering applied, paper count and
+    // whether this is an advanced search
     var search_options = {
         "search_term": query,
         "sort": $("#sort-dropdown").val(),
-        "min_papers": min_papers
+        "min_papers": $("#Papers-dropdown").val(),
+        "advanced_search": $("#advanced-search-checkbox").is(":checked") && !iterative_search
     };
 
     // Remove error messages from date inputs if there was an error previously
@@ -100,8 +99,8 @@ function search(query, iterative_search) {
         }
 
         else {
-            search_options["start_date"] = start_date;
-            search_options["end_date"] = end_date;
+            search_options.start_date = start_date;
+            search_options.end_date = end_date;
         }
     }
 
@@ -142,7 +141,7 @@ function search(query, iterative_search) {
 
         var data = apis[i].buildQuery(search_options);
 
-         $.ajax(apis[i].url, {"data": data, "context": apis[i]})
+        $.ajax(apis[i].url, {"data": data, "context": apis[i]})
             .done(function(data, textStatus, jqXHR) {
                 // Note: this refers to the api object
                 search_progress.results[this.name] = this.formatResults(data, search_options);
