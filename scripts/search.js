@@ -1,28 +1,3 @@
-
-const API_KEY = "ba079b238ccdab296232e4ce8b9f5b6e";
-const SCI_DIR_API_URL = "https://api.elsevier.com/content/search/scidir";
-const SCO_API_URL = "https://api.elsevier.com/content/search/scopus";
-
-var SCI_DIR_API_FIELDS = {
-    "title": "dc:title",
-    "abstract": "dc:description",
-    "authors": "authors",
-    "published_date": "prism:coverDate",
-    "url": "prism:url",
-    "total_results": "opensearch:totalResults",
-    "keywords": "authkeywords"
-};
-
-var SCO_API_FIELDS = {
-    "title": "dc:title",
-    "abstract": "dc:description",
-    "authors": "author",
-    "published_date": "prism:coverDate",
-    "url": "prism:url",
-    "total_results": "opensearch:totalResults",
-    "keywords": "authkeywords"
-};
-
 // The maximum number of characters to show in the abstract before truncating
 var MAX_ABSTRACT_LENGTH = 500;
 
@@ -45,8 +20,10 @@ var saved;
 var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select," +
                        ".Searching input, .Searching select");
 
+var apis = [sci_dir_api, scopus_api];
+
 /*
- * Return a Date object from a string
+ * Return a Date object from a string in the format DD/MM/YYYY or DD-MM-YYYY
  */
 function parseDate(date_text) {
     var res = date_regex.exec(date_text);
@@ -78,46 +55,9 @@ function toggleAdvancedSearch() {
 }
 
 /*
- * Return the search query to send to the API. The format is described at this
- * page: http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm
- */
-function buildQuery(search_terms) {
-    return "key(" + search_terms + ") AND abs(" + search_terms + ") AND title(" +
-           search_terms + ")";
-}
-
-/*
- * Send an AJAX request to the given URL with the given query data. progress
- * stores the results, number failed API calls and total APIs, and callback
- * is called when all APIs have finished
- */
-function callAPI(url, query, api_name, progress, callback) {
-    $.ajax(url, {"data": query})
-        .done(function(data, textStatus, jqXHR) {
-            if (data["search-results"][SCI_DIR_API_FIELDS.total_results] > 0) {
-                progress.results[api_name] = data["search-results"]["entry"];
-            }
-            else {
-                progress.results[api_name] = [];
-            }
-        })
-
-        .fail(function(jqXHR, textStatus, errorThrown) {
-            progress.errors += 1;
-        })
-
-        .always(function() {
-            num_finished = Object.keys(progress.results).length + progress.errors;
-            if (num_finished == progress.num_apis) {
-                callback();
-            }
-        });
-}
-
-/*
- * Send an AJAX request to search ScienceDirect and Scopus with the search query
- * provided and use the filters selected on the page. Call rankResults() when
- * the requests are completed
+ * Send an AJAX request to each search API with the search query provided and
+ * use the filters selected on the page. Call rankResults() when the requests
+ * are completed
  */
 function search(query, iterative_search) {
     query = query.trim();
@@ -127,20 +67,11 @@ function search(query, iterative_search) {
 
     currentIndex = 0;
     var advanced_search = $("#advanced-search-checkbox").is(":checked");
-    var min_papers = $("#Papers-dropdown").val();
+    var min_papers = 25; //$("#Papers-dropdown").val();
 
-    // Query data that is common to both Science Direct and Scopus
-    var query_data = {
-        "apiKey": API_KEY,
-        "httpAccept": "application/json",
-        "count": min_papers,
-        "sort": "+relevancy",
-        "query": (advanced_search && !iterative_search ? query : buildQuery(query))
-    };
-
-    // Store the original search term and the filtering applied so that we can
-    // pass it to rankResults()
-    var filtering = {
+    // Store the original search term, filtering applied and paper count so that
+    // we can pass it to rankResults()
+    var search_options = {
         "search_term": query,
         "sort": $("#sort-dropdown").val(),
         "min_papers": min_papers
@@ -169,12 +100,8 @@ function search(query, iterative_search) {
         }
 
         else {
-            // Add date range to data to be sent to APIs. Unfortunately the
-            // lowest granularity for date filtering is years
-            query_data["date"] = start_date.getFullYear() + "-" + end_date.getFullYear();
-
-            filtering["start_date"] = start_date;
-            filtering["end_date"] = end_date;
+            search_options["start_date"] = start_date;
+            search_options["end_date"] = end_date;
         }
     }
 
@@ -189,21 +116,14 @@ function search(query, iterative_search) {
         $("#search-area input").blur();
     }
 
-    // Create seperate query data for each API since the fields used could be
-    // different
-    var sci_dir_query_data = JSON.parse(JSON.stringify(query_data));
-    sci_dir_query_data.field = Object.values(SCI_DIR_API_FIELDS).join(",");
-    var scopus_query_data = JSON.parse(JSON.stringify(query_data));
-    scopus_query_data.field = Object.values(SCO_API_FIELDS).join(",");
-
     $form_elements.prop("disabled", true);
 
     // Keep track of search progress, since API calls are asynchronous and there
     // is no way of knowing which order the APIs will return
     var search_progress = {
-        "num_apis": 2,
+        "num_apis": apis.length,
         "errors": 0, // The number of failed API calls
-        "results": {}
+        "results": {}  // Store formatted papers from each API
     };
 
     // Callback function for when all APIs have finished
@@ -213,122 +133,49 @@ function search(query, iterative_search) {
             $form_elements.prop("disabled", false);
         }
         else {
-            rankResults(search_progress.results, filtering, iterative_search);
+            rankResults(search_progress.results, search_options, iterative_search);
         }
     }
 
-    callAPI(SCI_DIR_API_URL, sci_dir_query_data, "science_direct",
-            search_progress, callback);
+    // Make an AJAX request for each API
+    for (var i=0; i<apis.length; i++) {
 
-    callAPI(SCO_API_URL, scopus_query_data, "scopus", search_progress, callback);
+        var data = apis[i].buildQuery(search_options);
+
+         $.ajax(apis[i].url, {"data": data, "context": apis[i]})
+            .done(function(data, textStatus, jqXHR) {
+                // Note: this refers to the api object
+                search_progress.results[this.name] = this.formatResults(data, search_options);
+            })
+
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                search_progress.errors += 1;
+            })
+
+            // This callback is executed regardless of success or failure
+            .always(function() {
+                var num_finished = Object.keys(search_progress.results).length + search_progress.errors;
+                if (num_finished == search_progress.num_apis) {
+                    callback();
+                }
+            });
+    }
 }
 
 /*
- * Format the merged search results from ScienceDirect and Scopus and send
- * them to our server to be ranked, and call showSearchResults() when it is
- * complete. results is an object with a key for each API.
+ * Send the results from each API to our server to be ranked, and call
+ * showSearchResults() when it is complete. results is an object with a key for
+ * each API containing a list of formatted papers
  */
-function rankResults(results, filtering, iterative_search) {
+function rankResults(results, search_options, iterative_search) {
 
     var formatted_results = {
-        "query": filtering["search_term"],
+        "query": search_options["search_term"],
         "papers": {}
     };
 
     for (var api_name in results) {
-        var papers = results[api_name];
-
-        if (papers.length > 0) {
-
-            formatted_results.papers[api_name] = [];
-
-            var start_date = filtering.start_date || null;
-            var end_date = filtering.end_date || null;
-
-            for (var i=0; i<papers.length; i++) {
-
-                // The link in the search results is an API link - replace the start
-                // of it to get the actual link to the paper
-                var link = papers[i][SCI_DIR_API_FIELDS.url];
-
-                if (api_name == "science_direct") {
-                    link = link.replace("https://api.elsevier.com/content/",
-                                        "https://www.sciencedirect.com/science/");
-                }
-                else if (api_name == "scopus") {
-                    link = link.replace("https://api.elsevier.com/content/abstract/scopus_id/",
-                                        "https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=");
-                }
-
-                // Put the author list into a single array
-                var authors = [];
-
-                // Check that the authors list is present
-                if (SCI_DIR_API_FIELDS.authors in papers[i] && papers[i][SCI_DIR_API_FIELDS.authors] &&
-                    "author" in papers[i][SCI_DIR_API_FIELDS.authors]) {
-
-                    var authors_list = papers[i].authors.author;
-
-                    for (var j=0; j<authors_list.length; j++) {
-                        authors.push(authors_list[j]["given-name"] + " " +
-                                     authors_list[j]["surname"]);
-                    }
-                }
-                else if (papers[i][SCO_API_FIELDS.authors]) {
-                    var authors_list = papers[i][SCO_API_FIELDS.authors];
-
-                    for (var j=0; j<authors_list.length; j++) {
-                        authors.push(authors_list[j]["given-name"] + " " +
-                                     authors_list[j]["surname"]);
-                    }
-                }
-                else {
-                    authors = ["N/A"];
-                }
-
-                var keywords = [];
-                if (papers[i][SCI_DIR_API_FIELDS.keywords]) {
-                    keywords = papers[i][SCI_DIR_API_FIELDS.keywords].split(" | ");
-                }
-                else {
-                    keywords = [];
-                }
-
-                var date = "";
-                if (api_name == "science_direct") {
-                    date = papers[i][SCI_DIR_API_FIELDS.published_date][0]["$"];
-                }
-                else if (api_name == "scopus") {
-                    date = papers[i][SCO_API_FIELDS.published_date];
-                }
-
-                var p = {
-                    "title": papers[i][SCI_DIR_API_FIELDS.title],
-                    "link": link,
-                    "authors": authors,
-                    "published_date": date,
-                    "abstract": papers[i][SCI_DIR_API_FIELDS.abstract],
-                    "keywords": keywords
-                };
-
-                // Convert published date from YYYY-MM-DD to DD-MM-YYYY format
-                var d = p.published_date;
-                p.published_date = d.substr(8, 2) + "-" + d.substr(5,2) + "-" + d.substr(0, 4);
-
-                // If start date and end date filtering is applied then check the
-                // date is in the correct range (since API only filters by year)
-                if (start_date !== null && end_date !== null) {
-                    var pub_date = parseDate(p.published_date);
-
-                    // Skip if out of range
-                    if (pub_date < start_date || pub_date > end_date) {
-                        continue;
-                    }
-                }
-
-                formatted_results.papers[api_name].push(p);
-            }
-        }
+        formatted_results.papers[api_name] = results[api_name];
     }
 
     // Send formatted_results to our server via AJAX to do the ranking and
@@ -337,8 +184,8 @@ function rankResults(results, filtering, iterative_search) {
         "method": "POST",
         "data": {
             "r":  JSON.stringify(formatted_results),
-            "sort": filtering["sort"],
-            "min_papers": filtering["min_papers"],
+            "sort": search_options["sort"],
+            "min_papers": search_options["min_papers"],
             "initial_search": !iterative_search
         },
 
