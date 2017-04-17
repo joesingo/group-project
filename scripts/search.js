@@ -38,11 +38,11 @@ function parseDate(date_text) {
     var year = parseInt(res[3]);
 
     // Return null is any of day, month or year are out of range
-    if (day <= 0 || day > 31 || month <=0 || month > 12 || year <= 0) {
+    if (day <= 0 || day > 31 || month <= 0 || month > 12 || year <= 0) {
         return null;
     }
 
-    var d = new Date(year, month, day);
+    var d = new Date(year, month - 1, day);  // -1 since Jan is 0, Feb 1 etc...
     return d;
 }
 
