@@ -17,13 +17,22 @@ function BaseAPI(name) {
     /*
      * Convert the given search query into the format to be sent to the API server
      */
-    this.formatQuery = function(search_terms, advanced_search) {
+    this.formatQuery = function(search_terms, advanced_search, author) {
+        var q = "";
+
         if (advanced_search) {
-            return search_terms;
+            q = search_terms;
+        }
+        else {
+            q = "key(" + search_terms + ") AND abs(" + search_terms + ") AND " +
+                "title(" + search_terms + ")";
         }
 
-        return "key(" + search_terms + ") AND abs(" + search_terms + ") AND title(" +
-               search_terms + ")";
+        if (typeof(author) !== "undefined") {
+            q = "(" + q + ") AND aut(" + author + ")";
+        }
+
+        return q;
     }
 
     /*
@@ -36,11 +45,13 @@ function BaseAPI(name) {
      *    "advanced_search": <boolean>
      *  }
      * It may also have "start_date" and "end_date" (JS Date objects) if date
-     * filtering is being applied
+     * filtering is being applied, and "author" (string) if author filtering is
+     * applied
      */
     this.buildQuery = function(search_options) {
         var search_query = this.formatQuery(search_options.search_term,
-                                            search_options.advanced_search);
+                                            search_options.advanced_search,
+                                            search_options.author);
         var q = {
             "apiKey": this.key,
             "httpAccept": "application/json",

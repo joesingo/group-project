@@ -76,9 +76,9 @@ function search(query, iterative_search) {
         "advanced_search": $("#advanced-search-checkbox").is(":checked") && !iterative_search
     };
 
-    // Remove error messages from date inputs if there was an error previously
-    $("#date-filter .help-block").text("");
-    $("#date-filter .filter-controls").removeClass("has-error");
+    // Remove error messages if there was an error previously
+    $(".Sorting_Filtering .help-block").text("");
+    $(".Sorting_Filtering .filter-controls").removeClass("has-error");
 
     // If date filtering is selected...
     if ($("#date-filter input[type=checkbox]").is(":checked")) {
@@ -101,6 +101,21 @@ function search(query, iterative_search) {
         else {
             search_options.start_date = start_date;
             search_options.end_date = end_date;
+        }
+    }
+
+    // If author filtering is selected...
+    if ($("#author-filter input[type=checkbox]").is(":checked")) {
+        var $box = $("#author-filter input[type=text]");
+        var author = $box.val().trim();
+
+        if (!author) {
+            $box.parent().addClass("has-error");
+            $("#author-filter .help-block").text("Invalid author");
+            return false;
+        }
+        else {
+            search_options.author = author;
         }
     }
 
