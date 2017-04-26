@@ -77,8 +77,8 @@ function search(query, iterative_search) {
     };
 
     // Remove error messages if there was an error previously
-    $(".Filters .help-block").text("");
-    $(".Filters .filter-controls").removeClass("has-error");
+    $(".Sorting_Filtering .help-block").text("");
+    $(".Sorting_Filtering .filter-controls").removeClass("has-error");
 
     // If date filtering is selected...
     if ($("#date-filter input[type=checkbox]").is(":checked")) {

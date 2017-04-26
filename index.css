@@ -1,150 +1,51 @@
-html {
+body {
     background: white;
-    margin:0;
-    width: 100%;
+    margin: 0 auto !important;
+    width: 70%;
     height: 100%;
-}
-
-html body {
-    margin-top: 18%; /*Controls the height of when the body starts, e.g. the Search Bar */
 }
 
 nav {
     position: fixed; /*fixed navigation bar*/
-    width: 100%;
-    height: ; /*depends on final result*/
-    margin-top: -18%;
     background: white;
+    top: 0;
+    /*margin-top: -200px;*/
+    padding-top: 30px;
     z-index: 99; /*Make sure the navigation is in front of everything*/
-    text-align: center;
 }
 
+nav img {
+    display: inline;
+}
 
-nav img{
-    position: static;
-    display: block;
-    float: left;
-    margin-top: 1%;
-    margin-left: 2%;
+nav ul {
+    padding-left: 0;
+}
+
+nav li {
+    display: inline-block;
+    list-style-type: none;
+    padding-right: 40px;
+}
+
+.Sorting_Filtering .filter-controls input {
+    display: inline-block;
+    width: 100px;
 }
 
 .Cookies {
-    display: inline-block;
-    float: right;
-    margin-right: 1%;
-    margin-top: 1%;
+    position: fixed;
+    top: 10px;
+    right: 10px;
 }
 
-.SearchBar {
-    position: relative;
-    margin-top: 4.5%;
-    margin-right: 7%;
-}
-
-.SearchBar input {
-    font-size: 19px;
-}
-
-.SearchBar button {
-    margin-right: -5%;
-    margin-left: 2%;
-    letter-spacing: 3px;
-    font-size: 20px;
-}
-
-.AdvSearch p{
-    float: left;
-    margin-left: 2%;
-}
-
-.AdvSearch label {
+label {
     font-weight: normal !important;
-    float: left;
-    margin-left: 2%;
 }
 
-.Sorting {
-    display: inline-block;
-    float: left;
-    margin-left: -20%;
-}
-
-.Sorting h3{
+.heading {
     font-weight: bold;
     font-size: 1.3em;
-    float: left;
-}
-
-.Filters {
-    display: inline-block;
-    float: left;
-    margin-left: -5%;
-
-}
-
-.Filters h3{
-    font-weight: bold;
-    font-size: 1.3em;
-    float: left;
-}
-
-.Date {
-    display: inline-block;
-}
-
-.Date input {
-    display: inline-block;
-}
-
-.Date .filter-controls input{
-    width: 100px;
-    display: inline-block;
-}
-
-.Author {
-    display: inline-block;
-    margin-left: 15%;
-    margin-right: -15%;
-}
-
-.Author .filter-controls input{
-    width: 200px;
-    display: inline-block;
-}
-
-.TotalPapers {
-    position: relative;
-    display: inline-block;
-    margin-top: -2.3%;
-    margin-right: -10%;
-    margin-left: 10%;
-    float: right;
-}
-
-.TotalPapers label{
-    font-weight: normal !important;
-    display: inline-block;
-}
-
-.PapersPerPage {
-    position: relative;
-    display: inline-block;
-    margin-top: -2.3%;
-    margin-right: -50%;
-    margin-left: 50%;
-    float: right;
-}
-
-.PapersPerPage label{
-    font-weight: normal !important;
-    display: inline-block;
-}
-
-#Result-container {
-    width: 90%;
-    position: relative;
-    margin: 0 auto;
-    margin-top: 2%;
 }
 
 #search-results {
@@ -164,15 +65,12 @@ nav img{
 }
 
 .authors, .published-date {
+    color: gray;
     font-size: 0.9em;
 }
 
 .published-date {
     float: right;
-}
-
-.abstract-excerpt, .help-text {
-    color: gray;
 }
 
 .highlight {
