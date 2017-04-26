@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- =================================================================== -->
 
-    
+
     <!-- Main Header========================================================================================================= -->
     <nav>
     <!--Cookie-->
@@ -38,7 +38,7 @@
             <br />
     </div>
     <!--Advanced Search -->
-        <div class="AdvSearch">    
+        <div class="AdvSearch">
             <label>
                 <input type="checkbox" id="advanced-search-checkbox" onchange="toggleAdvancedSearch()" />
                Advanced search
@@ -65,9 +65,9 @@
                         <option value="date_asc">Date ascending</option>
                         <option value="date_desc">Date descending</option>
                         </select>
-                    </p> 
+                    </p>
             </div>
-            
+
             <!--Filters -->
             <div class = "Filters">
                 <h3><u>Filters</u></h3>
@@ -79,7 +79,8 @@
                 </span>
 
                 <span class = "Author">
-                    <p class="filter"><label> <input type="checkbox" onchange="toggleFilter(this)"> Author: </label> <span class="filter-controls"><input type="text" class="form-control" maxlength="50"/></span></p>
+                    <p class="filter" id="author-filter"><label> <input type="checkbox" onchange="toggleFilter(this)"> Author: </label> <span class="filter-controls"><input type="text" class="form-control" maxlength="50"/></span>
+                    <span class="help-block"></span></p>
                 </span>
 
                 <span class="TotalPapers">
