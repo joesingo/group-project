@@ -131,6 +131,7 @@
     define("RELEVANCE", "relevance");
     define("DATE_ASC", "date_asc");
     define("DATE_DESC", "date_desc");
+    define("CITATIONS", "citations");
 
     $r = $_REQUEST["r"];
     $initial_search = ($_REQUEST["initial_search"] == "true" ? true : false);
@@ -181,6 +182,23 @@
             // gets score 0, seconds gets -1, third gets -2 and so on.
             foreach ($papers as $i => $paper) {
                 $paper->score = -$i;
+            }
+        }
+    }
+    else if ($sort == CITATIONS) {
+        foreach ($data->papers as $api => $papers) {
+            foreach ($papers as $paper) {
+
+                // If citation count is available then set score to number of
+                // citations
+                if ($paper->citations != "") {
+                    $paper->score = $paper->citations;
+                }
+                else {
+                    // Set to -1 so that 0 citations is ranked higher than
+                    // citations N/A
+                    $paper->score = -1;
+                }
             }
         }
     }
