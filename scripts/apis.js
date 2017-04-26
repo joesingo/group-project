@@ -80,6 +80,7 @@ function BaseAPI(name) {
      *    "authors": ["...", ...],
      *    "published_date": "DD-MM-YYYY",
      *    "abstract": "...",
+     *    "citations": <No. of citations or null if N/A>
      *    "keywords": ["...", ...]
      *  }
      */
@@ -96,6 +97,7 @@ function BaseAPI(name) {
             var link = papers[i][this.api_fields.url];
             var authors = [];
             var date = "";
+            var citations = null;
 
             if (this.name == SCIENCE_DIRECT) {
                 // The link in the search results is an API link - replace the start
@@ -131,6 +133,8 @@ function BaseAPI(name) {
                 }
 
                 date = papers[i][this.api_fields.published_date];
+
+                citations = papers[i][this.api_fields.citations];
             }
 
             if (authors.length == 0) {
@@ -148,6 +152,7 @@ function BaseAPI(name) {
                 "authors": authors,
                 "published_date": date,
                 "abstract": papers[i][this.api_fields.abstract],
+                "citations": citations,
                 "keywords": keywords
             };
 
@@ -185,5 +190,6 @@ sci_dir_api.url = "https://api.elsevier.com/content/search/scidir";
 
 var scopus_api = new BaseAPI(SCOPUS);
 scopus_api.api_fields.authors = "author";
+scopus_api.api_fields.citations = "citedby-count";
 scopus_api.url = "https://api.elsevier.com/content/search/scopus";
 

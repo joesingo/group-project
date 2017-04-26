@@ -398,8 +398,12 @@ function showSearchResults(results) {
         });
 
         var $p2 = $("<p>", {
-            "text": keywords_matches + " matches"
+            "html": "<b>" + keywords_matches + "</b> matches"
         })
+
+        if (results.papers[i].citations !== null) {
+            $p2.append(", <b>" + results.papers[i].citations + "</b> citations")
+        }
 
         var $li = $("<li>");
         $li.append($link, "<br />", $authors, $date, $p, $p2);
