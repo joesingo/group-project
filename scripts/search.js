@@ -404,6 +404,9 @@ function showSearchResults(results) {
         if (results.papers[i].citations !== null) {
             $p2.append(", <b>" + results.papers[i].citations + "</b> citations")
         }
+        else {
+            $p2.append(", citations N/A");
+        }
 
         var $li = $("<li>");
         $li.append($link, "<br />", $authors, $date, $p, $p2);
