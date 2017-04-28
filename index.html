@@ -15,107 +15,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- =================================================================== -->
 
+</head>
+<body onload="loadCookies()">
 
-    <!-- Main Header========================================================================================================= -->
-    <nav>
-    <!--Cookie-->
-    <span class = "Cookies">
-        <select class="form-control" id="cookies-dropdown" onchange="search(document.forms['search-area'].query.value)">
-            <option selected disabled class="hideoption">Recent Searches</option>
-            <option value="cookie no.1">Cookie no.1</option>
-        </select>
-    </span>
-    <!--      -->
+<!-- Main Header========================================================================================================= -->
+<nav id="top-bar">
 
-    <!--Logo of Site-->
-    <img src="Spapers_title.jpg" height="142" width="370"/>
+    <div class="Searching">
 
-    <!-- Search box and search button -->
-    <div class="SearchBar"><!--Place on RHS of Logo-->
-        <form class="grid-cell form-inline" id="search-area" onsubmit="search(this.query.value); return false">
-            <input type="text" placeholder="Enter keywords..." class="form-control" maxlength="300" size="100" name="query"/><button class="btn btn-default">Search</button><!--Place on RHS of Searching-->
+        <!-- Search box and search button -->
+        <form class="grid-cell form-inline" id="search-area"
+            onsubmit="search(this.query.value); return false">
 
-            <br />
-    </div>
-    <!--Advanced Search -->
-        <div class="AdvSearch">
-            <label>
-                <input type="checkbox" id="advanced-search-checkbox" onchange="toggleAdvancedSearch()" />
-               Advanced search
-           </label>
+            <!--Logo of Site-->
+            <img src="Spapers_title.jpg" height=100/>
 
-            <p id="advanced-search-help" class="help-text" style="display: none">
-                You can use the search language described
-                <a href="http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm">here</a>
-            </p>
-            <br />
-        </div>
-    <!-- Start of Sorting and FIlters -->
-        <br />
-        <div class = "Filters_and_Sorting">
-            <!-- Sorting Selection Box -->
-            <div class = "Sorting">
-                <h3><u>Sort by</u></h3>
-            <br/>
-            <br/>
-            <br/>
-                    <p>
-                        <select class="form-control" id="sort-dropdown" onchange="search(document.forms['search-area'].query.value)">
-                        <option value="relevance">Relevance</option>
-                        <option value="date_asc">Date ascending</option>
-                        <option value="date_desc">Date descending</option>
-                        </select>
-                    </p>
-            </div>
+            <input type="text" placeholder="Enter keywords..." class="form-control" maxlength="380" size="150" name="query" />
+            <button class="btn btn-default">Search</button>
 
-            <!--Filters -->
-            <div class = "Filters">
-                <h3><u>Filters</u></h3>
-            <br/>
-            <br/>
-            <br/>
-                <span class = "Date">
-                    <p class="filter" id="date-filter"><label><input type="checkbox" onchange="toggleFilter(this)">Date: </label> <i> From</i> <span class="filter-controls"> <input type="text" class="date-input form-control" placeholder="dd/mm/yyyy"/> <i>to</i> <input type="text" class="date-input form-control" placeholder="dd/mm/yyyy"/></span><span class="help-block"></span></p>
-                </span>
-
-                <span class = "Author">
-                    <p class="filter" id="author-filter"><label> <input type="checkbox" onchange="toggleFilter(this)"> Author: </label> <span class="filter-controls"><input type="text" class="form-control" maxlength="50"/></span>
-                    <span class="help-block"></span></p>
-                </span>
-
-                <span class="TotalPapers">
-                <!--Total Number of Papers gathered for the Search Query -->
+            <div>
                 <label>
-                    Total No. of papers
-                    <select class="form-control" id="Papers-dropdown">
-                        <option value=50>50</option>
-                        <option value=100>100</option>
-                        <option value=150>150</option>
-                        <option value=200>200</option>
-                    </select>
-                </label>
-                </span>
+                    <input type="checkbox" id="advanced-search-checkbox"
+                           onchange="toggleAdvancedSearch(); positionResults()" />
+                   Advanced search
+               </label>
 
-                <span class="PapersPerPage"
-                <!--Number of Papers shown on each page -->
-                <label>
-                    No. of papers per page
-                    <select class="form-control" id="perPage">
-                        <option value=5>5</option>
-                        <option value=10>10</option>
-                        <option value=15>15</option>
-                        <option value=20>20</option>
-                    </select>
-                </label>
-            </span>
+                <span id="advanced-search-help" class="help-block" style="display: none">
+                    You can use the search language described
+                    <a href="http://api.elsevier.com/documentation/search/SCIDIRSearchTips.htm">here</a>
+                </span>
             </div>
-        </div>
         </form>
     </div>
-    </nav>
-</head>
 
-<body>
+    <!--Cookie-->
+    <span class="Cookies">
+        <select class="form-control" id="cookies-dropdown" onchange="cookieSearch(this)">
+            <option selected disabled class="hideoption">Recent Searches</option>
+        </select>
+    </span>
+
+    <ul class="Sorting_Filtering">
+        <li>
+            <span class="heading">Sort by</span><br />
+
+            <select class="form-control" id="sort-dropdown"
+                    onchange="search(document.forms['search-area'].query.value)">
+
+                <option value="relevance">Relevance</option>
+                <option value="date_asc">Date ascending</option>
+                <option value="date_desc">Date descending</option>
+            </select>
+        </li>
+
+        <li>
+            <span class="heading">Filters</span><br />
+
+            <span class="filter" id="date-filter">
+                <label>
+                    <input type="checkbox" onchange="toggleFilter(this)">
+                    Date: from
+                </label>
+                <span class="filter-controls">
+                    <input type="text" class="date-input form-control"
+                           placeholder="dd/mm/yyyy" />
+                    to
+                    <input type="text" class="date-input form-control"
+                           placeholder="dd/mm/yyyy" />
+                </span>
+                <span class="help-block"></span>
+            </span>
+
+        </li>
+
+        <li class="filter" id="author-filter">
+            <label>
+                <input type="checkbox" onchange="toggleFilter(this)">
+                Author:
+            </label>
+            <span class="filter-controls">
+                <input type="text" class="form-control" maxlength="50"/>
+            </span>
+            <span class="help-block"></span>
+        </li>
+
+        <li>
+            No. papers to find: <br />
+            <select class="form-control" id="Papers-dropdown">
+                <option value=50>50</option>
+                <option value=100>100</option>
+                <option value=150>150</option>
+                <option value=200>200</option>
+            </select>
+        </li>
+
+        <li>
+            Papers per page: <br />
+            <select class="form-control" id="perPage">
+                <option value=5>5</option>
+                <option value=10>10</option>
+                <option value=15>15</option>
+                <option value=20>20</option>
+            </select>
+        </li>
+
+    </ul>
+
+</nav>
+
 <div id="Result-container">
         <div class="grid-cell">
             <!-- Search results -->
@@ -144,6 +151,22 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="scripts/apis.js"></script>
 <script type="text/javascript" src="scripts/search.js"></script>
+
+<script type="text/javascript">
+
+/*
+ * Adjust the top margin of the search results div so it appears just beneath
+ * the fixed header bar
+ */
+function positionResults() {
+    var $b = $("#top-bar");
+    var m = 10 + $b.height() + parseInt($b.css("padding-top"), 10);
+    $("#Result-container").css("margin-top", m);
+}
+
+$(window).on("resize", positionResults);
+$(document).ready(positionResults);
+</script>
 
 </body>
 </html>
