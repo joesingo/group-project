@@ -23,6 +23,23 @@ var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select," +
 var apis = [sci_dir_api, scopus_api];
 
 /*
+ * Disable the search/sorting/filtering inputs whilst a search is in progress
+ */
+function disableInputs() {
+    $form_elements.each(function(i, el) {
+        el.setAttribute("data-prev-state", el.disabled);
+        el.disabled = true;
+    });
+}
+
+function enableInputs() {
+    $form_elements.each(function(i, el) {
+        var prev_state = el.getAttribute("data-prev-state");
+        el.disabled = (prev_state === "true");  // Convert to boolean from string
+    });
+}
+
+/*
  * Return a Date object from a string in the format DD/MM/YYYY or DD-MM-YYYY
  */
 function parseDate(date_text) {
@@ -130,7 +147,7 @@ function search(query, iterative_search) {
         $("#search-area input").blur();
     }
 
-    $form_elements.prop("disabled", true);
+    disableInputs();
 
     // Keep track of search progress, since API calls are asynchronous and there
     // is no way of knowing which order the APIs will return
@@ -144,7 +161,7 @@ function search(query, iterative_search) {
     var callback = function() {
         if (search_progress.errors == search_progress.num_apis) {
             $("#message").html("Error querying search APIs &#9785; Please try again later");
-            $form_elements.prop("disabled", false);
+            enableInputs();
         }
         else {
             rankResults(search_progress.results, search_options, iterative_search);
@@ -205,7 +222,7 @@ function rankResults(results, search_options, iterative_search) {
 
         "error": function() {
             $("#message").text("Unexpected error ranking results:(");
-            $form_elements.prop("disabled", false);
+            enableInputs();
         },
 
         "success": function(data, textStatus) {
@@ -271,7 +288,7 @@ function showSearchResults(results) {
 
     $("#search-results").children().show();
     $("#message").hide();
-    $form_elements.prop("disabled", false);
+    enableInputs();
     $("#page-navigation").show();
 
     if (results.papers.length == 0) {
