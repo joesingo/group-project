@@ -6,9 +6,8 @@ var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
 // Regex to remove field names that can be used in the advanced search so we
 // can extract the actual search terms when highlighting keywords
-var advanced_search_fields_regexp = new RegExp("(tak|abs|aut|aus|aff|pdt|key|" +
-                                               "ref|ttl|title|src|sub|vis|pag)" +
-                                               "\\(", "gi")
+var advanced_search_fields_regexp = new RegExp("(abs|aut|doi|key|ref|scrtitle|" +
+                                               "title-abs-key|tak|title)\\(", "gi");
 
 // Papers per page and current begining of page for moving between papers.
 var papersPerPage = 0;
@@ -64,11 +63,18 @@ function parseDate(date_text) {
 }
 
 /*
- * Toggle the advanced search help text
+ * Toggle the advanced search help text (which shows link to popup help)
  *
  */
 function toggleAdvancedSearch() {
     $("#advanced-search-help").toggle();
+}
+
+/*
+ * Toggle the advanced search help popup
+ */
+function toggleAdvancedSearchHelp() {
+    $("#advanced-search-help-popup, #gray-screen").toggle();
 }
 
 /*

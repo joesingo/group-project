@@ -22,6 +22,12 @@ function BaseAPI(name) {
 
         if (advanced_search) {
             q = search_terms;
+
+            // Convert aut -> author-name for scopus advanced search language
+            if (this.name == SCOPUS) {
+                var r = new RegExp("aut\\(", "gi");
+                q = q.replace(r, "author-name(");
+            }
         }
         else {
             q = "key(" + search_terms + ") AND abs(" + search_terms + ") AND " +
