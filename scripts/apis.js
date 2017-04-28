@@ -21,8 +21,10 @@ function BaseAPI(name) {
         var q = "";
 
         if (typeof(author) !== "undefined") {
-            q = "aut(" + author + ") AND (";
+            q = "aut(" + author + ") AND ";
         }
+
+        q += "(";
 
         if (advanced_search) {
             q += search_terms;
