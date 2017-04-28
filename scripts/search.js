@@ -7,7 +7,7 @@ var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 // Regex to remove field names that can be used in the advanced search so we
 // can extract the actual search terms when highlighting keywords
 var advanced_search_fields_regexp = new RegExp("(abs|aut|doi|key|ref|scrtitle|" +
-                                               "title-abs-key|tak|title)\\(", "gi");
+                                               "title)\\(", "gi");
 
 // Papers per page and current begining of page for moving between papers.
 var papersPerPage = 0;
