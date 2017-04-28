@@ -49,10 +49,10 @@
 
     <!--Cookie-->
     <span class="Cookies">
-        <select class="form-control" id="cookies-dropdown" onchange="search(document.forms['search-area'].query.value)">
-            <option selected disabled class="hideoption">Recent Searches</option>
-            <option value="cookie no.1">Cookie no.1</option>
+        <select class="form-control" id="cookies-dropdown" onchange="repeatSearch(this.value)">
+            <option selected disabled class="hideoption" value="null">Recent Searches</option>
         </select>
+        <p><a href="#" onclick="clearCookies()">Clear</a></p>
     </span>
 
     <ul class="Sorting_Filtering">
