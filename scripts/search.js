@@ -153,7 +153,11 @@ function search(query, iterative_search) {
         $("#search-area input").blur();
     }
 
-    disableInputs();
+    // If iterative search then inputs are already disabled, and disabling again
+    // will overwrite initial status
+    if (!iterative_search) {
+        disableInputs();
+    }
 
     // Keep track of search progress, since API calls are asynchronous and there
     // is no way of knowing which order the APIs will return
