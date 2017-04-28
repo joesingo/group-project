@@ -141,8 +141,13 @@
     $data = json_decode($r);
 
     foreach ($data->papers as $api => $papers) {
-        foreach ($papers as $paper) {
+        foreach ($papers as $i => $paper) {
             $paper->score = 0;
+
+            // Filter out glossary results
+            if (trim(strtolower($paper->title)) == "glossary") {
+                unset($data->papers->$api[$i]);
+            }
         }
     }
 
