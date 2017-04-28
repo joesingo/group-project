@@ -325,9 +325,9 @@ function showSearchResults(results) {
     var advanced_search = $("#advanced-search-checkbox").is(":checked");
     if (advanced_search) {
         // 1. Remove field names (e.g. abs, ttl, ref)
-        // 2. Remove AND, OR, NOT and brackets
+        // 2. Remove AND, OR, NOT, brackets and quotes
         results.query = results.query.replace(advanced_search_fields_regexp, "")
-                                     .replace(/AND|OR|NOT|\(|\)/gi, "");
+                                     .replace(/AND|OR|NOT|\(|\)|"/gi, "");
     }
 
     // Remove excessive whitespace and split by space to get keywords
