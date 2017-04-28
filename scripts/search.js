@@ -250,6 +250,8 @@ function rankResults(results, search_options, iterative_search) {
             }
         }
     });
+
+    $("#message").text("Ranking results...")
 }
 
 /*

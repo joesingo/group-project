@@ -20,23 +20,25 @@ function BaseAPI(name) {
     this.formatQuery = function(search_terms, advanced_search, author) {
         var q = "";
 
-        if (advanced_search) {
-            q = search_terms;
+        if (typeof(author) !== "undefined") {
+            q = "aut(" + author + ") AND (";
+        }
 
-            // Convert aut -> author-name for scopus advanced search language
-            if (this.name == SCOPUS) {
-                var r = new RegExp("aut\\(", "gi");
-                q = q.replace(r, "author-name(");
-            }
+        if (advanced_search) {
+            q += search_terms;
         }
         else {
-            q = "key(" + search_terms + ") AND abs(" + search_terms + ") AND " +
+            q += "key(" + search_terms + ") AND abs(" + search_terms + ") AND " +
                 "title(" + search_terms + ")";
         }
 
-        if (typeof(author) !== "undefined") {
-            q = "(" + q + ") AND aut(" + author + ")";
+        // Convert aut -> author-name for scopus
+        if (this.name == SCOPUS) {
+            var r = new RegExp("aut\\(", "gi");
+            q = q.replace(r, "author-name(");
         }
+
+        q += ")";
 
         return q;
     }
