@@ -55,6 +55,56 @@ function toggleAdvancedSearch() {
 }
 
 /*
+* Load the search query cookies
+*/
+function loadCookies() {
+    var decodedCookie = document.cookie;
+    if (decodedCookie != ""){
+        var cookieSplit = decodedCookie.split(';');
+        cookieLength = cookieSplit.length;
+        var element = document.getElementById("cookies-dropdown");
+        for (var i = 0; i < cookieLength-1; i++) {
+
+            var currentCookie = cookieSplit[i].split('=');
+
+            var optionAdd = document.createElement("option");
+                
+            optionAdd.text = currentCookie[0];
+            optionAdd.value = currentCookie[1];
+
+            element.add(optionAdd);
+            
+        }
+    }
+       
+}
+
+/*
+* Saves the search query to the cookie string
+*/
+function saveCookie(search_terms, search_options) {
+
+    var cookieName = search_terms + "=" + search_options;
+
+    document.cookie = cookieName;
+}
+
+/*
+* Displays current cookies
+*/
+function displayNewCookies(search_terms, search_options) {
+    var decodedCookie = document.cookie;
+    var cookieSplit = decodedCookie.split(';');
+    var element = document.getElementById("cookies-dropdown");
+
+    var optionAdd = document.createElement("option");
+    optionAdd.text = search_terms;
+    optionAdd.value = search_options;
+
+    element.add(optionAdd);
+}
+
+/*
  * Send an AJAX request to each search API with the search query provided and
  * use the filters selected on the page. Call rankResults() when the requests
  * are completed
@@ -77,8 +127,8 @@ function search(query, iterative_search) {
     };
 
     // Remove error messages if there was an error previously
-    $(".Filters .help-block").text("");
-    $(".Filters .filter-controls").removeClass("has-error");
+    $(".Sorting_Filtering .help-block").text("");
+    $(".Sorting_Filtering .filter-controls").removeClass("has-error");
 
     // If date filtering is selected...
     if ($("#date-filter input[type=checkbox]").is(":checked")) {
@@ -150,6 +200,143 @@ function search(query, iterative_search) {
             rankResults(search_progress.results, search_options, iterative_search);
         }
     }
+
+    
+    if (!iterative_search) {
+        saveCookie(query, search_options);  
+    }
+    
+    
+
+    // Make an AJAX request for each API
+    for (var i=0; i<apis.length; i++) {
+
+        var data = apis[i].buildQuery(search_options);
+
+        $.ajax(apis[i].url, {"data": data, "context": apis[i]})
+            .done(function(data, textStatus, jqXHR) {
+                // Note: this refers to the api object
+                search_progress.results[this.name] = this.formatResults(data, search_options);
+            })
+
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                search_progress.errors += 1;
+            })
+
+            // This callback is executed regardless of success or failure
+            .always(function() {
+                var num_finished = Object.keys(search_progress.results).length + search_progress.errors;
+                if (num_finished == search_progress.num_apis) {
+                    callback();
+                }
+            });
+    }
+    if (!iterative_search) {
+        displayNewCookies(query, search_options);  
+    }
+}
+
+/*
+ * Similar to the search() function, instead called via cookie dropdown
+ */
+function cookieSearch(cookieValue, iterative_search) {
+
+    /*
+    query = query.trim();
+    if (!query) {
+        return false;
+    }
+    */
+
+    currentIndex = 0;
+
+    /*
+    // Store the original search term, filtering applied, paper count and
+    // whether this is an advanced search
+    var search_options = {
+        "search_term": query,
+        "sort": $("#sort-dropdown").val(),
+        "min_papers": $("#Papers-dropdown").val(),
+        "advanced_search": $("#advanced-search-checkbox").is(":checked") && !iterative_search
+    };
+    */
+
+    // Remove error messages if there was an error previously
+    $(".Sorting_Filtering .help-block").text("");
+    $(".Sorting_Filtering .filter-controls").removeClass("has-error");
+
+    /*
+    // If date filtering is selected...
+    if ($("#date-filter input[type=checkbox]").is(":checked")) {
+        var $date_boxes = $("#date-filter .date-input");
+
+        var start_date = parseDate($date_boxes[0].value);
+        var end_date = parseDate($date_boxes[1].value);
+
+        if (!start_date || !end_date) {
+            $date_boxes.parent().addClass("has-error");
+            $("#date-filter .help-block").text("Invalid start/end date");
+            return false;
+            }
+
+        else if (start_date >= end_date) {
+            $("#date-filter .help-block").text("Start date must be before end date");
+            return false;
+        }
+
+        else {
+            search_options.start_date = start_date;
+            search_options.end_date = end_date;
+        }
+    }
+
+    // If author filtering is selected...
+    if ($("#author-filter input[type=checkbox]").is(":checked")) {
+        var $box = $("#author-filter input[type=text]");
+        var author = $box.val().trim();
+
+        if (!author) {
+            $box.parent().addClass("has-error");
+            $("#author-filter .help-block").text("Invalid author");
+            return false;
+        }
+        else {
+            search_options.author = author;
+        }
+    }
+    */
+
+    if (iterative_search) {
+        $("#message").text("Searching for '" + query + "'...").show();;
+    }
+    else {
+        $("#search-results").children().hide();
+        $("#message").text("Loading...").show();;
+
+        $("#search-area input").val(query);
+        $("#search-area input").blur();
+    }
+
+    $form_elements.prop("disabled", true);
+
+    // Keep track of search progress, since API calls are asynchronous and there
+    // is no way of knowing which order the APIs will return
+    var search_progress = {
+        "num_apis": apis.length,
+        "errors": 0, // The number of failed API calls
+        "results": {}  // Store formatted papers from each API
+    };
+
+    // Callback function for when all APIs have finished
+    var callback = function() {
+        if (search_progress.errors == search_progress.num_apis) {
+            $("#message").html("Error querying search APIs &#9785; Please try again later");
+            $form_elements.prop("disabled", false);
+        }
+        else {
+            rankResults(search_progress.results, search_options, iterative_search);
+        }
+    }    
 
     // Make an AJAX request for each API
     for (var i=0; i<apis.length; i++) {
