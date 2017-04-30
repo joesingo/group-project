@@ -67,7 +67,14 @@
         /*
          * Send the results back to the client and clear all session variables
          */
-        function send_results() {
+        function send_results($num_papers) {
+
+            // Remove excess papers
+            $_SESSION["prev_results"]->papers = array_slice
+            (
+                $_SESSION["prev_results"]->papers, 0, $num_papers
+            );
+
             $_SESSION["prev_results"]->debug = $_SESSION["debug"];
             echo json_encode($_SESSION["prev_results"]);
             session_destroy();
@@ -243,6 +250,6 @@
 
     // If reached here then we are not doing any more searches, so send final
     // results
-    $iter->send_results();
+    $iter->send_results($min_papers);
 
 ?>
