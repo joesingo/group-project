@@ -3,6 +3,9 @@ var MAX_ABSTRACT_LENGTH = 500;
 
 var COOKIE_PREFIX = "spapers-search-";
 
+// Timeout in ms for AJAX requests to API servers
+var AJAX_TIMEOUT = 30 * 1000;
+
 // Regular expression to match dates in the format DD/MM/YYYY or DD-MM-YYYY
 var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
@@ -108,6 +111,9 @@ function loadCookies() {
             }
         }
     }
+
+    // Reset dropdown
+    $("#cookies-dropdown").val("null");
 }
 
 /*
@@ -142,8 +148,6 @@ function clearCookies() {
     }
 
     loadCookies();
-    // Reset dropdown
-    $("#cookies-dropdown").val("null");
 }
 
 /*
@@ -290,7 +294,7 @@ function search(query, iterative_search) {
 
         var data = apis[i].buildQuery(search_options);
 
-        $.ajax(apis[i].url, {"data": data, "context": apis[i]})
+        $.ajax(apis[i].url, {"data": data, "context": apis[i], "timeout": AJAX_TIMEOUT})
             .done(function(data, textStatus, jqXHR) {
                 // Note: this refers to the api object
                 search_progress.results[this.name] = this.formatResults(data, search_options);
