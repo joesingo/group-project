@@ -1,6 +1,8 @@
 // The maximum number of characters to show in the abstract before truncating
 var MAX_ABSTRACT_LENGTH = 500;
 
+var COOKIE_PREFIX = "spapers-search-";
+
 // Regular expression to match dates in the format DD/MM/YYYY or DD-MM-YYYY
 var date_regex = new RegExp(/^(\d\d)[/-](\d\d)[/-](\d\d\d\d)$/);
 
@@ -17,7 +19,7 @@ var currentIndex = 0;
 var saved;
 
 var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select," +
-                       ".Searching input, .Searching select");
+                       ".Searching input, .Searching select, #cookies-dropdown");
 
 var apis = [sci_dir_api, scopus_api];
 
@@ -78,6 +80,100 @@ function toggleAdvancedSearchHelp() {
 }
 
 /*
+ * Load the search query cookies
+ */
+function loadCookies() {
+    var decodedCookie = document.cookie;
+    if (decodedCookie != ""){
+        var cookieSplit = decodedCookie.split(';');
+        var cookieLength = cookieSplit.length;
+        var element = document.getElementById("cookies-dropdown");
+
+        $(element).find(".recent-search").remove();
+
+        for (var i = 0; i < cookieLength; i++) {
+
+            var currentCookie = cookieSplit[i].trim().split('=');
+
+            var optionAdd = document.createElement("option");
+
+            if (currentCookie[0].startsWith(COOKIE_PREFIX)) {
+                currentCookie[0] = currentCookie[0].replace(COOKIE_PREFIX, "");
+
+                optionAdd.text = currentCookie[0];
+                optionAdd.value = currentCookie[1];
+                optionAdd.className = "recent-search";
+
+                element.appendChild(optionAdd);
+            }
+        }
+    }
+}
+
+/*
+ * Saves the search query to the cookie string
+ */
+function saveCookie(search_terms, search_options) {
+
+    var cookieName = COOKIE_PREFIX + search_terms + "=" + JSON.stringify(search_options);
+
+    document.cookie = cookieName;
+}
+
+/*
+ * Remove all recent searches cookies
+ */
+function clearCookies() {
+    var decodedCookie = document.cookie;
+    if (decodedCookie != ""){
+        var cookieSplit = decodedCookie.split(';');
+        var cookieLength = cookieSplit.length;
+
+        for (var i = 0; i < cookieLength; i++) {
+
+            var currentCookie = cookieSplit[i].trim().split('=');
+
+            if (currentCookie[0].startsWith(COOKIE_PREFIX)) {
+                // Set the cookie expiry time to some point in the past
+                var expiry_time = new Date(0).toGMTString();
+                document.cookie = currentCookie[0] + "=blah; expires=" + expiry_time;
+            }
+        }
+    }
+
+    loadCookies();
+    // Reset dropdown
+    $("#cookies-dropdown").val("null");
+}
+
+/*
+ * Repeat a previous search and change form inputs accordingly
+ */
+function repeatSearch(search_options_json) {
+    var search_options = JSON.parse(search_options_json);
+
+    $("#search-area input[name=query]").val(search_options.search_term);
+    $("#sort-dropdown").val(search_options.sort);
+    $("#Papers-dropdown").val(search_options.min_papers);
+    $("#advanced-search-checkbox").prop("checked", search_options.advanced_search);
+
+    if ("start_date_str" in search_options && "end_date_str" in search_options) {
+        var $date_boxes = $("#date-filter .date-input");
+        $date_boxes[0].value = search_options.start_date_str;
+        $date_boxes[1].value = search_options.end_date_str;
+
+        $("#date-filter input[type=checkbox]").prop("checked", true);
+    }
+
+    if ("author" in search_options) {
+        $("#author-filter input[type=text]").val(search_options.author);
+        $("#author-filter input[type=checkbox]").prop("checked", true);
+    }
+
+    search(search_options.search_term, false);
+}
+
+/*
  * Send an AJAX request to each search API with the search query provided and
  * use the filters selected on the page. Call rankResults() when the requests
  * are completed
@@ -107,8 +203,11 @@ function search(query, iterative_search) {
     if ($("#date-filter input[type=checkbox]").is(":checked")) {
         var $date_boxes = $("#date-filter .date-input");
 
-        var start_date = parseDate($date_boxes[0].value);
-        var end_date = parseDate($date_boxes[1].value);
+        var start_date_str = $date_boxes[0].value;
+        var end_date_str = $date_boxes[1].value;
+
+        var start_date = parseDate(start_date_str);
+        var end_date = parseDate(end_date_str);
 
         if (!start_date || !end_date) {
             $date_boxes.parent().addClass("has-error");
@@ -124,6 +223,11 @@ function search(query, iterative_search) {
         else {
             search_options.start_date = start_date;
             search_options.end_date = end_date;
+
+            // Store the string representation to make it simple to repeat search
+            // from recent searches dropdown
+            search_options.start_date_str = start_date_str;
+            search_options.end_date_str = end_date_str;
         }
     }
 
@@ -153,10 +257,13 @@ function search(query, iterative_search) {
         $("#search-area input").blur();
     }
 
-    // If iterative search then inputs are already disabled, and disabling again
-    // will overwrite initial status
     if (!iterative_search) {
+        // If iterative search then inputs are already disabled, and disabling again
+        // will overwrite initial status
         disableInputs();
+
+        saveCookie(query, search_options);
+        loadCookies();
     }
 
     // Keep track of search progress, since API calls are asynchronous and there
@@ -491,4 +598,6 @@ $(document).ready(function() {
     // Hide the search results area
     $("#search-results").children().hide();
     $("#message").show();
+
+    loadCookies();
 });
