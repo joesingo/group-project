@@ -338,7 +338,8 @@ function rankResults(results, search_options, iterative_search) {
             "r":  JSON.stringify(formatted_results),
             "sort": search_options["sort"],
             "min_papers": search_options["min_papers"],
-            "initial_search": !iterative_search
+            "initial_search": !iterative_search,
+            "max_iterations": (search_options.advanced_search ? 1 : 10)
         },
 
         "error": function() {

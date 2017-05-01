@@ -235,7 +235,7 @@
     $iter->update_results($data);
     $iter->sort_results();
 
-    $max_iterations = 10;
+    $max_iterations = $_REQUEST["max_iterations"];
     $min_papers = $_REQUEST["min_papers"];
 
     $related_keywords = $iter->get_related_keywords();
