@@ -21,8 +21,9 @@ var currentIndex = 0;
 // The results put here so it is in scope for recalling show papers from the next function.
 var saved;
 
-var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select," +
-                       ".Searching input, .Searching select, #cookies-dropdown");
+var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select, " +
+                       ".Searching input, .Searching button, .Searching select, " +
+                       "#cookies-dropdown");
 
 var apis = [sci_dir_api, scopus_api];
 
@@ -68,18 +69,23 @@ function parseDate(date_text) {
 }
 
 /*
- * Toggle the advanced search help text (which shows link to popup help)
+ * Toggle the advanced search help text (which shows link to help)
  *
  */
 function toggleAdvancedSearch() {
     $("#advanced-search-help").toggle();
+
+    // Hide help if just turned advanced search off
+    if (!$("#advanced-search-checkbox").is(":checked")) {
+        $("#advanced-search-help-div").hide();
+    }
 }
 
 /*
  * Toggle the advanced search help popup
  */
 function toggleAdvancedSearchHelp() {
-    $("#advanced-search-help-popup, #gray-screen").toggle();
+    $("#advanced-search-help-div").toggle();
 }
 
 /*
