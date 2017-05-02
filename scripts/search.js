@@ -21,8 +21,9 @@ var currentIndex = 0;
 // The results put here so it is in scope for recalling show papers from the next function.
 var saved;
 
-var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select," +
-                       ".Searching input, .Searching select, #cookies-dropdown");
+var $form_elements = $(".Sorting_Filtering input, .Sorting_Filtering select, " +
+                       ".Searching input, .Searching button, .Searching select, " +
+                       "#cookies-dropdown");
 
 var apis = [sci_dir_api, scopus_api];
 
