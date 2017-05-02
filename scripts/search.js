@@ -68,18 +68,23 @@ function parseDate(date_text) {
 }
 
 /*
- * Toggle the advanced search help text (which shows link to popup help)
+ * Toggle the advanced search help text (which shows link to help)
  *
  */
 function toggleAdvancedSearch() {
     $("#advanced-search-help").toggle();
+
+    // Hide help if just turned advanced search off
+    if (!$("#advanced-search-checkbox").is(":checked")) {
+        $("#advanced-search-help-div").hide();
+    }
 }
 
 /*
  * Toggle the advanced search help popup
  */
 function toggleAdvancedSearchHelp() {
-    $("#advanced-search-help-popup, #gray-screen").toggle();
+    $("#advanced-search-help-div").toggle();
 }
 
 /*

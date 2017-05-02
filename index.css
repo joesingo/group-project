@@ -18,11 +18,11 @@ nav img {
     display: inline;
 }
 
-nav ul {
+ul.Sorting_Filtering {
     padding-left: 0;
 }
 
-nav li {
+ul.Sorting_Filtering li {
     display: inline-block;
     list-style-type: none;
     padding-right: 40px;
@@ -40,36 +40,13 @@ nav li {
     text-align: right;
 }
 
-#gray-screen {
-    background: gray;
-    z-index: 100;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.5;
-}
-
 #advanced-search-help {
     display: inline-block;
 }
 
-#advanced-search-help-popup {
-    position: absolute;
-    top: 100px;
-    left: 50%;
-    width: 800px;
-    margin-left: -400px;
-    z-index: 101;
-}
-
-#advanced-search-help-popup button {
-    float: right;
-}
-
-#advanced-search-help-popup, #gray-screen {
+#advanced-search-help-div {
     display: none;
+    width: 1000px;
 }
 
 label {
