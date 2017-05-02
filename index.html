@@ -3,6 +3,13 @@
 <head>
     <title>SPapers | Scientific Papers </title>
 
+    <script>
+    /* Giving the alert that cookies are in place when page is loading on start up*/
+    function cookie_alert() {
+       alert("We are using cookies to ensure that we give you the best experience of our website.");
+    }
+    </script>
+
     <!-- Stylesheeets================================================================================================= -->
     <!-- Making the design of the website usign Bootstrap and an external CSS -->
     <link rel="stylesheet" type="text/css" href="index.css">
@@ -16,7 +23,7 @@
     <!-- =================================================================== -->
 
 </head>
-<body>
+<body onload="cookie_alert()">
 
 <!-- Main Header========================================================================================================= -->
 <nav id="top-bar">
@@ -192,6 +199,7 @@
     </div>
 </div>
 
+
 <script type="text/javascript" src="scripts/stop_words.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="scripts/apis.js"></script>
@@ -213,5 +221,8 @@ $(window).on("resize", positionResults);
 $(document).ready(positionResults);
 </script>
 
+
 </body>
 </html>
+
+
