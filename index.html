@@ -3,12 +3,12 @@
 <head>
     <title>SPapers | Scientific Papers </title>
 
-    <script>
-    /* Giving the alert that cookies are in place when page is loading on start up*/
-    function cookie_alert() {
-       alert("We are using cookies to ensure that we give you the best experience of our website.");
-    }
-    </script>
+<!--     // 
+    // /* Giving the alert that cookies are in place when page is loading on start up*/
+    // function cookie_alert() {
+    //    alert("We are using cookies to ensure that we give you the best experience of our website.");
+    // }
+    //  -->
 
     <!-- Stylesheeets================================================================================================= -->
     <!-- Making the design of the website usign Bootstrap and an external CSS -->
@@ -22,9 +22,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- =================================================================== -->
 
-</head>
-<body onload="cookie_alert()">
-
+</head>s
+<body> <!-- onload="cookie_alert()" -->
 <!-- Main Header========================================================================================================= -->
 <nav id="top-bar">
 
@@ -176,7 +175,7 @@
                     <span id="related-keywords"></span>
                 </p>
                 <p>
-                   Showing <b id="no-of-results"></b> results for <b id="search-query"></b>
+                   Showing <b id="no-of-results"></b> results for <span id="search-query"></span>
                 </p>
                 <ol start="1" id="results-list"></ol>
                 <p id="page-navigation">
@@ -190,54 +189,13 @@
         </div>
 </div>
 
-<<<<<<< HEAD
-<div id="gray-screen"></div>
-
-<div id="advanced-search-help-popup" class="panel panel-default">
-    <div class="panel-heading">
-        <h4 style="display: inline-block;">Advanced Search</h4>
-    </div>
-
-    <div class="panel-body">
-        <p>SPapers supports an advanced search language to allow for more fine-tuned searches.</p>
-
-        <p>
-            To restrict a search to specific fields, use the syntax <code>field_name(search_quey)</code>.
-            The available fields are:
-
-            <ul>
-                <li><code>abs</code> - Full text of the document's abstract</li>
-                <li><code>aut</code> - Authors of the document</li>
-                <li><code>doi</code> - Digital Object Identifier (DOI) of the document</li>
-                <li><code>key</code> - Keywords for the document</li>
-                <li><code>ref</code> - References cited at the end of the document</li>
-                <li><code>srctitle</code> - Title of the journal, book, book series, handbook, or reference work the document appear in</li>
-                <li><code>title</code> - Title of the document</li>
-            </ul>
-
-            <b>Note:</b> If no field is specified then <em>all</em> fields are searched, which often results in
-            irrelevant results!
-        </p>
-
-        <p>
-            Multiple search queries can be joined together using <code>OR</code>, <code>AND</code>
-            and <code>AND NOT</code>. By default <code>AND</code> is inserted between any spaces or
-            hyphens - e.g. <code>heart attack</code> and <code>heart-attack</code> are both converted to
-            <code>heart AND attack</code>
-        </p>
-
-        <p>To search for an exact phrase use double quotes, e.g. <code>"heart attack"</code>.</p>
-
-        <button type="button" class="btn btn-default" data-dismiss="modal"
-                onclick="toggleAdvancedSearchHelp()">
-                Close
-        </button>
-    </div>
+<!-- Cookie Banner HTML -->
+<div id="cookie-bar" class="fixed">
+    <p>We use cookies to enhance your experience in our web site. By visiting it, you agree our <a href="https://www.cookielaw.org/the-cookie-law/" target="_blank" class="cb-policy">Cookies Policy</a>
+        <a href="#" id="save-cookie-example"class="cb-enable">I Understand</a>
+    </p>
 </div>
 
-
-=======
->>>>>>> origin/master
 <script type="text/javascript" src="scripts/stop_words.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="scripts/apis.js"></script>
@@ -259,8 +217,22 @@ $(window).on("resize", positionResults);
 $(document).ready(positionResults);
 </script>
 
+<!-- Added the Cookie Banner Script -->
+<script>
+window.onload = function(){
+    try {
+        if(localStorage.getItem("cookie-enable")!="1"){
+            document.getElementById("cookie-bar").style.display="block";
+        }
+        document.getElementById("save-cookie-example").addEventListener( "click", function() {
+            localStorage.setItem("cookie-enable", "1");
+            document.getElementById("cookie-bar").style.display="none";
+        } );
+    } catch( e ) {
+        return false;
+    }
+}
+</script>
 
 </body>
 </html>
-
-
