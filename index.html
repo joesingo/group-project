@@ -190,54 +190,6 @@
         </div>
 </div>
 
-<<<<<<< HEAD
-<div id="gray-screen"></div>
-
-<div id="advanced-search-help-popup" class="panel panel-default">
-    <div class="panel-heading">
-        <h4 style="display: inline-block;">Advanced Search</h4>
-    </div>
-
-    <div class="panel-body">
-        <p>SPapers supports an advanced search language to allow for more fine-tuned searches.</p>
-
-        <p>
-            To restrict a search to specific fields, use the syntax <code>field_name(search_quey)</code>.
-            The available fields are:
-
-            <ul>
-                <li><code>abs</code> - Full text of the document's abstract</li>
-                <li><code>aut</code> - Authors of the document</li>
-                <li><code>doi</code> - Digital Object Identifier (DOI) of the document</li>
-                <li><code>key</code> - Keywords for the document</li>
-                <li><code>ref</code> - References cited at the end of the document</li>
-                <li><code>srctitle</code> - Title of the journal, book, book series, handbook, or reference work the document appear in</li>
-                <li><code>title</code> - Title of the document</li>
-            </ul>
-
-            <b>Note:</b> If no field is specified then <em>all</em> fields are searched, which often results in
-            irrelevant results!
-        </p>
-
-        <p>
-            Multiple search queries can be joined together using <code>OR</code>, <code>AND</code>
-            and <code>AND NOT</code>. By default <code>AND</code> is inserted between any spaces or
-            hyphens - e.g. <code>heart attack</code> and <code>heart-attack</code> are both converted to
-            <code>heart AND attack</code>
-        </p>
-
-        <p>To search for an exact phrase use double quotes, e.g. <code>"heart attack"</code>.</p>
-
-        <button type="button" class="btn btn-default" data-dismiss="modal"
-                onclick="toggleAdvancedSearchHelp()">
-                Close
-        </button>
-    </div>
-</div>
-
-
-=======
->>>>>>> origin/master
 <script type="text/javascript" src="scripts/stop_words.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="scripts/apis.js"></script>
@@ -259,8 +211,5 @@ $(window).on("resize", positionResults);
 $(document).ready(positionResults);
 </script>
 
-
 </body>
 </html>
-
-
