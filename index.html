@@ -3,13 +3,6 @@
 <head>
     <title>SPapers | Scientific Papers </title>
 
-    <script>
-    /* Giving the alert that cookies are in place when page is loading on start up*/
-    function cookie_alert() {
-       alert("We are using cookies to ensure that we give you the best experience of our website.");
-    }
-    </script>
-
     <!-- Stylesheeets================================================================================================= -->
     <!-- Making the design of the website usign Bootstrap and an external CSS -->
     <link rel="stylesheet" type="text/css" href="index.css">
@@ -23,8 +16,7 @@
     <!-- =================================================================== -->
 
 </head>
-<body onload="cookie_alert()">
-
+<body>
 <!-- Main Header========================================================================================================= -->
 <nav id="top-bar">
 
@@ -190,6 +182,15 @@
         </div>
 </div>
 
+
+<!-- Cookie Banner HTML -->
+<div id="cookie-bar" class="fixed">
+    <p>We use cookies to enhance your experience in our web site. By visiting it, you agree our <a href="https://www.cookielaw.org/the-cookie-law/" target="_blank" class="cb-policy">Cookies Policy</a>
+        <a href="#" id="save-cookie-example"class="cb-enable">I Understand</a>
+    </p>
+</div>
+
+
 <script type="text/javascript" src="scripts/stop_words.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="scripts/apis.js"></script>
@@ -210,6 +211,25 @@ function positionResults() {
 $(window).on("resize", positionResults);
 $(document).ready(positionResults);
 </script>
+
+
+<!-- Added the Cookie Banner Script -->
+<script>
+window.onload = function(){
+    try {
+        if(localStorage.getItem("cookie-enable")!="1"){
+            document.getElementById("cookie-bar").style.display="block";
+        }
+        document.getElementById("save-cookie-example").addEventListener( "click", function() {
+            localStorage.setItem("cookie-enable", "1");
+            document.getElementById("cookie-bar").style.display="none";
+        } );
+    } catch( e ) {
+        return false;
+    }
+}
+</script>
+
 
 </body>
 </html>
