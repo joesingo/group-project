@@ -411,10 +411,14 @@ function showMoreAbstract(link) {
  */
 function showSearchResults(results) {
     $("#no-of-results").text(results.papers.length);
-    $("#search-query").text(results.query);
     $("#results-list").text("");
     $("#related-keywords").text("");
     $("#related-keywords").parent().show();
+
+    $("#search-query").html("<b>" + results.query + "</b>");
+    if (results.iterative_searches.length > 0) {
+        $("#search-query").append(", " + results.iterative_searches.join(", "));
+    }
 
     $("#search-results").children().show();
     $("#message").hide();

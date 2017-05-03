@@ -76,6 +76,8 @@
             );
 
             $_SESSION["prev_results"]->debug = $_SESSION["debug"];
+            $_SESSION["prev_results"]->iterative_searches = $_SESSION["prev_searches"];
+
             echo json_encode($_SESSION["prev_results"]);
             session_destroy();
             exit();
