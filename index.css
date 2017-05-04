@@ -18,6 +18,10 @@ nav img {
     display: inline;
 }
 
+#search-area input[name=query] {  /* Search bar */
+    width: 700px;
+}
+
 ul.Sorting_Filtering {
     padding-left: 0;
 }

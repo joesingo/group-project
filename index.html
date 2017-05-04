@@ -3,13 +3,6 @@
 <head>
     <title>SPapers | Scientific Papers </title>
 
-<!--     // 
-    // /* Giving the alert that cookies are in place when page is loading on start up*/
-    // function cookie_alert() {
-    //    alert("We are using cookies to ensure that we give you the best experience of our website.");
-    // }
-    //  -->
-
     <!-- Stylesheeets================================================================================================= -->
     <!-- Making the design of the website usign Bootstrap and an external CSS -->
     <link rel="stylesheet" type="text/css" href="index.css">
@@ -22,8 +15,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- =================================================================== -->
 
-</head>s
-<body> <!-- onload="cookie_alert()" -->
+</head>
+<body>
 <!-- Main Header========================================================================================================= -->
 <nav id="top-bar">
 
@@ -31,7 +24,7 @@
 
         <!-- Search box and search button -->
         <form class="grid-cell form-inline" id="search-area"
-            onsubmit="search(this.query.value); return false">
+            onsubmit="search(this.query.value); positionResults(); return false">
 
             <!--Logo of Site-->
             <img src="Spapers_title.jpg" height=100/>
@@ -189,12 +182,14 @@
         </div>
 </div>
 
+
 <!-- Cookie Banner HTML -->
 <div id="cookie-bar" class="fixed">
     <p>We use cookies to enhance your experience in our web site. By visiting it, you agree our <a href="https://www.cookielaw.org/the-cookie-law/" target="_blank" class="cb-policy">Cookies Policy</a>
         <a href="#" id="save-cookie-example"class="cb-enable">I Understand</a>
     </p>
 </div>
+
 
 <script type="text/javascript" src="scripts/stop_words.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
@@ -217,6 +212,7 @@ $(window).on("resize", positionResults);
 $(document).ready(positionResults);
 </script>
 
+
 <!-- Added the Cookie Banner Script -->
 <script>
 window.onload = function(){
@@ -233,6 +229,7 @@ window.onload = function(){
     }
 }
 </script>
+
 
 </body>
 </html>
