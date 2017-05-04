@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 body {
     background: white;
     margin: 0 auto !important;
@@ -144,4 +145,152 @@ a.show-more-link {
 
 .cb-policy:hover {
     color: #B22222;
+=======
+body {
+    background: white;
+    margin: 0 auto !important;
+    width: 70%;
+    height: 100%;
+}
+
+nav {
+    position: fixed; /*fixed navigation bar*/
+    background: white;
+    top: 0;
+    /*margin-top: -200px;*/
+    padding-top: 30px;
+    z-index: 99; /*Make sure the navigation is in front of everything*/
+}
+
+nav img {
+    display: inline;
+}
+
+#search-area input[name=query] {  /* Search bar */
+    width: 700px;
+}
+
+ul.Sorting_Filtering {
+    padding-left: 0;
+}
+
+ul.Sorting_Filtering li {
+    display: inline-block;
+    list-style-type: none;
+    padding-right: 40px;
+}
+
+.Sorting_Filtering .filter-controls input {
+    display: inline-block;
+    width: 100px;
+}
+
+.Cookies {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    text-align: right;
+}
+
+#advanced-search-help {
+    display: inline-block;
+}
+
+#advanced-search-help-div {
+    display: none;
+    width: 1000px;
+}
+
+label {
+    font-weight: normal !important;
+}
+
+.heading {
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+#search-results {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    height: 100%;
+}
+
+#search-area {
+    vertical-align: bottom;
+}
+
+#search-results li a.paper-title {
+    font-size: 1.2em;
+}
+
+.authors, .published-date {
+    color: gray;
+    font-size: 0.9em;
+}
+
+.published-date {
+    float: right;
+}
+
+.highlight {
+    background: yellow;
+}
+
+a.show-more-link {
+    font-size: 1em;
+    cursor: pointer;
+}
+
+#page-navigation {
+    text-align: center;
+}
+
+
+
+#cookie-bar.fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+
+}
+
+#cookie-bar {
+    line-height: 24px;
+    color: #eeeeee;
+    text-align: center;
+    padding: 3px 0;
+    width: 100%;
+    color: white;
+    background-color: #444;
+    display:none;
+}
+
+.cb-enable {
+    border-radius: 10%;
+    margin-left: 100px;
+    color: white;
+    padding: 5px;   
+    border-radius: 10%;
+    font-family: serif;
+    text-decoration: none;
+    transition: .3s background-color;
+ }
+
+.cb-enable:hover {
+    color: #FFFFFF;
+    background-color: #B22222;
+}
+
+.cb-policy {
+    color: white;
+    text-decoration: underline;
+}
+
+.cb-policy:hover {
+    color: #B22222;
+>>>>>>> origin/master
 }
